@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -9,7 +10,7 @@ import FaqSection from "../components/FaqSection";
 import HowItWorks from "../components/HowItWorks";
 import WhatsAppButton from "../components/WhatsAppButton";
 import SEO from "../components/SEO";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, User, BookText } from "lucide-react";
 
 // Sample data for featured accommodations
 const featuredAccommodations = [
@@ -20,6 +21,7 @@ const featuredAccommodations = [
     roomType: "individual" as RoomType,
     pricePerWeek: 250,
     imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "limited" as "normal" | "limited" | "last_units",
   },
   {
     id: 2,
@@ -28,6 +30,7 @@ const featuredAccommodations = [
     roomType: "shared" as RoomType,
     pricePerWeek: 180,
     imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
   },
   {
     id: 3,
@@ -36,6 +39,7 @@ const featuredAccommodations = [
     roomType: "double" as RoomType,
     pricePerWeek: 320,
     imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "last_units" as "normal" | "limited" | "last_units",
   },
   {
     id: 4,
@@ -44,6 +48,7 @@ const featuredAccommodations = [
     roomType: "individual" as RoomType,
     pricePerWeek: 230,
     imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
   },
 ];
 
@@ -156,8 +161,55 @@ const Index = () => {
                 roomType={accommodation.roomType}
                 pricePerWeek={accommodation.pricePerWeek}
                 imageUrl={accommodation.imageUrl}
+                availabilityStatus={accommodation.availabilityStatus}
               />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Links Section */}
+      <section className="py-16">
+        <div className="container">
+          <h2 className="text-2xl md:text-3xl font-bold mb-10 text-center text-neutrals-dark dark:text-white">
+            Acesso Rápido
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link 
+              to="/client-area" 
+              className="bg-white dark:bg-neutrals-dark p-6 rounded-2xl shadow-md flex items-center hover:shadow-lg transition-shadow"
+            >
+              <div className="w-16 h-16 bg-teal/10 dark:bg-teal-light/10 flex items-center justify-center rounded-full mr-5">
+                <User size={28} className="text-teal dark:text-teal-light" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-neutrals-dark dark:text-white mb-1">
+                  Área do Cliente
+                </h3>
+                <p className="text-muted-foreground">
+                  Acesse sua reserva, documentos e mensagens
+                </p>
+              </div>
+              <ArrowRight size={20} className="ml-auto text-teal dark:text-teal-light" />
+            </Link>
+            
+            <Link 
+              to="/blog" 
+              className="bg-white dark:bg-neutrals-dark p-6 rounded-2xl shadow-md flex items-center hover:shadow-lg transition-shadow"
+            >
+              <div className="w-16 h-16 bg-teal/10 dark:bg-teal-light/10 flex items-center justify-center rounded-full mr-5">
+                <BookText size={28} className="text-teal dark:text-teal-light" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-neutrals-dark dark:text-white mb-1">
+                  Blog
+                </h3>
+                <p className="text-muted-foreground">
+                  Dicas e informações para estudantes na Irlanda
+                </p>
+              </div>
+              <ArrowRight size={20} className="ml-auto text-teal dark:text-teal-light" />
+            </Link>
           </div>
         </div>
       </section>

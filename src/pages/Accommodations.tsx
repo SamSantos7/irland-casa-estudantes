@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -17,6 +18,7 @@ const accommodationsData = [
     roomType: "individual" as RoomType,
     pricePerWeek: 250,
     imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "limited" as "normal" | "limited" | "last_units",
   },
   {
     id: 2,
@@ -25,6 +27,7 @@ const accommodationsData = [
     roomType: "shared" as RoomType,
     pricePerWeek: 180,
     imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
   },
   {
     id: 3,
@@ -33,6 +36,7 @@ const accommodationsData = [
     roomType: "double" as RoomType,
     pricePerWeek: 320,
     imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "last_units" as "normal" | "limited" | "last_units",
   },
   {
     id: 4,
@@ -41,6 +45,7 @@ const accommodationsData = [
     roomType: "individual" as RoomType,
     pricePerWeek: 220,
     imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
   },
   {
     id: 5,
@@ -49,6 +54,7 @@ const accommodationsData = [
     roomType: "shared" as RoomType,
     pricePerWeek: 170,
     imageUrl: "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "limited" as "normal" | "limited" | "last_units",
   },
   {
     id: 6,
@@ -57,6 +63,7 @@ const accommodationsData = [
     roomType: "individual" as RoomType,
     pricePerWeek: 240,
     imageUrl: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "last_units" as "normal" | "limited" | "last_units",
   },
   {
     id: 7,
@@ -65,6 +72,7 @@ const accommodationsData = [
     roomType: "double" as RoomType,
     pricePerWeek: 300,
     imageUrl: "https://images.unsplash.com/photo-1499916078039-922301b0eb9b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
   },
   {
     id: 8,
@@ -73,6 +81,7 @@ const accommodationsData = [
     roomType: "individual" as RoomType,
     pricePerWeek: 210,
     imageUrl: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "limited" as "normal" | "limited" | "last_units",
   },
   {
     id: 9,
@@ -81,6 +90,7 @@ const accommodationsData = [
     roomType: "shared" as RoomType,
     pricePerWeek: 160,
     imageUrl: "https://images.unsplash.com/photo-1559599238-3d0d41863f8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDF8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
+    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
   },
 ];
 
@@ -104,12 +114,19 @@ const priceRanges = [
   { value: "301-1000", label: "Acima de €300/semana" },
 ];
 
+const availabilityOptions = [
+  { value: "all", label: "Todas as disponibilidades" },
+  { value: "limited", label: "Vagas limitadas" },
+  { value: "last_units", label: "Últimas unidades" },
+];
+
 const Accommodations = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filteredAccommodations, setFilteredAccommodations] = useState(accommodationsData);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [selectedRoomTypes, setSelectedRoomTypes] = useState<string[]>([]);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
+  const [selectedAvailability, setSelectedAvailability] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -124,14 +141,16 @@ const Accommodations = () => {
     applyFilters(
       city ? [city] : [],
       roomType ? [roomType] : [],
-      []
+      [],
+      "all"
     );
   }, [searchParams]);
 
   const applyFilters = (
     cities: string[],
     roomTypes: string[],
-    priceRanges: string[]
+    priceRanges: string[],
+    availability: string
   ) => {
     let filtered = [...accommodationsData];
 
@@ -152,6 +171,10 @@ const Accommodations = () => {
       });
     }
 
+    if (availability !== "all") {
+      filtered = filtered.filter((acc) => acc.availabilityStatus === availability);
+    }
+
     setFilteredAccommodations(filtered);
   };
 
@@ -160,7 +183,7 @@ const Accommodations = () => {
       ? selectedCities.filter((c) => c !== city)
       : [...selectedCities, city];
     setSelectedCities(newSelectedCities);
-    applyFilters(newSelectedCities, selectedRoomTypes, selectedPriceRanges);
+    applyFilters(newSelectedCities, selectedRoomTypes, selectedPriceRanges, selectedAvailability);
   };
 
   const toggleRoomType = (roomType: string) => {
@@ -168,7 +191,7 @@ const Accommodations = () => {
       ? selectedRoomTypes.filter((rt) => rt !== roomType)
       : [...selectedRoomTypes, roomType];
     setSelectedRoomTypes(newSelectedRoomTypes);
-    applyFilters(selectedCities, newSelectedRoomTypes, selectedPriceRanges);
+    applyFilters(selectedCities, newSelectedRoomTypes, selectedPriceRanges, selectedAvailability);
   };
 
   const togglePriceRange = (priceRange: string) => {
@@ -176,14 +199,20 @@ const Accommodations = () => {
       ? selectedPriceRanges.filter((pr) => pr !== priceRange)
       : [...selectedPriceRanges, priceRange];
     setSelectedPriceRanges(newSelectedPriceRanges);
-    applyFilters(selectedCities, selectedRoomTypes, newSelectedPriceRanges);
+    applyFilters(selectedCities, selectedRoomTypes, newSelectedPriceRanges, selectedAvailability);
+  };
+  
+  const handleAvailabilityChange = (availability: string) => {
+    setSelectedAvailability(availability);
+    applyFilters(selectedCities, selectedRoomTypes, selectedPriceRanges, availability);
   };
 
   const clearFilters = () => {
     setSelectedCities([]);
     setSelectedRoomTypes([]);
     setSelectedPriceRanges([]);
-    applyFilters([], [], []);
+    setSelectedAvailability("all");
+    applyFilters([], [], [], "all");
   };
 
   const toggleFiltersView = () => {
@@ -296,7 +325,7 @@ const Accommodations = () => {
                   </div>
                 </div>
 
-                <div>
+                <div className="mb-6">
                   <h3 className="text-lg font-medium mb-3 text-neutrals-dark dark:text-white">
                     Faixa de Preço
                   </h3>
@@ -325,6 +354,23 @@ const Accommodations = () => {
                     ))}
                   </div>
                 </div>
+
+                <div>
+                  <h3 className="text-lg font-medium mb-3 text-neutrals-dark dark:text-white">
+                    Disponibilidade
+                  </h3>
+                  <select
+                    value={selectedAvailability}
+                    onChange={(e) => handleAvailabilityChange(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white"
+                  >
+                    {availabilityOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="w-full lg:w-3/4">
@@ -344,6 +390,7 @@ const Accommodations = () => {
                         roomType={accommodation.roomType}
                         pricePerWeek={accommodation.pricePerWeek}
                         imageUrl={accommodation.imageUrl}
+                        availabilityStatus={accommodation.availabilityStatus}
                       />
                     ))}
                   </div>

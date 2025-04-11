@@ -11,6 +11,7 @@ export interface AccommodationCardProps {
   roomType: RoomType;
   pricePerWeek: number;
   imageUrl: string;
+  availabilityStatus?: "normal" | "limited" | "last_units";
 }
 
 const AccommodationCard = ({
@@ -20,6 +21,7 @@ const AccommodationCard = ({
   roomType,
   pricePerWeek,
   imageUrl,
+  availabilityStatus = "normal",
 }: AccommodationCardProps) => {
   // Função para traduzir o tipo de quarto
   const translateRoomType = (type: RoomType) => {
@@ -34,6 +36,27 @@ const AccommodationCard = ({
         return type;
     }
   };
+
+  // Configurações para o badge de disponibilidade
+  const availabilityConfig = {
+    normal: {
+      show: false,
+      text: "",
+      classes: "",
+    },
+    limited: {
+      show: true,
+      text: "Vagas limitadas",
+      classes: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+    },
+    last_units: {
+      show: true,
+      text: "Últimas unidades",
+      classes: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    },
+  };
+
+  const availability = availabilityConfig[availabilityStatus];
 
   return (
     <Link
@@ -53,6 +76,11 @@ const AccommodationCard = ({
           <Euro size={16} className="mr-1" />
           <span>A partir de {pricePerWeek}/semana</span>
         </div>
+        {availability.show && (
+          <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold animate-pulse ${availability.classes}`}>
+            {availability.text}
+          </div>
+        )}
       </div>
       <div className="p-4">
         <h3 className="text-lg font-semibold text-neutrals-dark dark:text-white mb-1">

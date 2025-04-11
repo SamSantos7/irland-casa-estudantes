@@ -14,6 +14,8 @@ import AccommodationDetail from "./pages/AccommodationDetail";
 import ReservationForm from "./pages/ReservationForm";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
+import Blog from "./pages/Blog";
+import ClientArea from "./pages/ClientArea";
 
 // Criar uma nova instância do QueryClient fora do componente
 const queryClient = new QueryClient();
@@ -35,6 +37,8 @@ const App = () => {
                   <Route path="/reservation-form" element={<ReservationForm />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/client-area" element={<ClientArea />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
