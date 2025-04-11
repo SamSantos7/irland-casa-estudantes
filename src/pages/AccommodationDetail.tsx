@@ -12,7 +12,7 @@ import {
   Users,
   Coffee,
   Utensils,
-  Shower,
+  Bath,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -277,7 +277,7 @@ const AccommodationDetail = () => {
                       ) : index === 3 ? (
                         <Users className="text-teal dark:text-teal-light mr-3" size={20} />
                       ) : (
-                        <Shower className="text-teal dark:text-teal-light mr-3" size={20} />
+                        <Bath className="text-teal dark:text-teal-light mr-3" size={20} />
                       )}
                       <span className="text-neutrals-dark dark:text-white">{amenity}</span>
                     </div>
