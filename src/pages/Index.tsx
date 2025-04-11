@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -8,6 +7,7 @@ import TestimonialCard from "../components/TestimonialCard";
 import FaqSection from "../components/FaqSection";
 import HowItWorks from "../components/HowItWorks";
 import WhatsAppButton from "../components/WhatsAppButton";
+import SEO from "../components/SEO";
 import { ArrowRight } from "lucide-react";
 
 // Sample data for featured accommodations
@@ -74,6 +74,11 @@ const testimonials = [
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO 
+        title="Acomodações estudantis na Irlanda | Irlanda Casa Estudantes"
+        description="Encontre acomodação estudantil ideal na Irlanda com suporte em português. Residências em Dublin, Cork, Galway e Limerick para seu intercâmbio."
+        canonical="/"
+      />
       <Navbar />
 
       {/* Hero Section */}
@@ -197,7 +202,7 @@ const Index = () => {
       </section>
 
       <Footer />
-      <WhatsAppButton phoneNumber="353000000000" />
+      <WhatsAppButton phoneNumber="353000000000" showOptions={true} />
     </div>
   );
 };
