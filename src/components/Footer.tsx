@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
-import { Instagram, Facebook, Twitter, Linkedin, MessageCircle } from "lucide-react";
+import { Instagram, Facebook, Twitter, Linkedin, MessageCircle, Star } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -45,6 +46,22 @@ const Footer = () => {
                   className="text-sm text-neutrals-dark dark:text-neutrals-light hover:text-teal dark:hover:text-teal-light transition-colors"
                 >
                   Contato
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terms"
+                  className="text-sm text-neutrals-dark dark:text-neutrals-light hover:text-teal dark:hover:text-teal-light transition-colors"
+                >
+                  Termos de Uso
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/refund-policy"
+                  className="text-sm text-neutrals-dark dark:text-neutrals-light hover:text-teal dark:hover:text-teal-light transition-colors"
+                >
+                  Política de Reembolso
                 </Link>
               </li>
             </ul>
@@ -132,7 +149,90 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-200 dark:border-gray-700 mt-10 pt-6">
+        {/* Reviews Section */}
+        <div className="mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col items-center mb-6">
+            <h3 className="text-lg font-semibold mb-3 text-neutrals-dark dark:text-white">Avaliações de Nossos Clientes</h3>
+            <div className="flex items-center space-x-8">
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <div className="flex items-center cursor-pointer">
+                    <div className="bg-white dark:bg-neutrals-dark-800 px-4 py-2 rounded-lg shadow-sm flex items-center hover:shadow-md transition-shadow">
+                      <img src="https://lh3.googleusercontent.com/a-/ALV-UjWKP-v03i5tWoLJEQg7QoqC8pg3QRHxdxajm_Xu=s40-c-c0x00000000-cc-rp-mo-br100" alt="Google Reviews" className="w-6 h-6 mr-2" />
+                      <div>
+                        <div className="text-sm font-medium">Google Reviews</div>
+                        <div className="flex items-center">
+                          <div className="flex">
+                            {Array(5).fill(0).map((_, i) => (
+                              <Star key={i} size={14} fill="#FACC15" stroke="none" />
+                            ))}
+                          </div>
+                          <span className="text-xs ml-1">5.0</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <img src="https://lh3.googleusercontent.com/a-/ALV-UjWKP-v03i5tWoLJEQg7QoqC8pg3QRHxdxajm_Xu=s40-c-c0x00000000-cc-rp-mo-br100" alt="Avatar" className="w-8 h-8 rounded-full mr-2" />
+                      <div>
+                        <div className="text-sm font-medium">Maria S.</div>
+                        <div className="flex">
+                          {Array(5).fill(0).map((_, i) => (
+                            <Star key={i} size={12} fill="#FACC15" stroke="none" />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      "Serviço excelente! Consegui uma ótima acomodação em Dublin com facilidade graças ao atendimento personalizado."
+                    </p>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <div className="flex items-center cursor-pointer">
+                    <div className="bg-white dark:bg-neutrals-dark-800 px-4 py-2 rounded-lg shadow-sm flex items-center hover:shadow-md transition-shadow">
+                      <img src="https://cdn.trustpilot.net/brand-assets/1.3.0/favicons/favicon.ico" alt="Trustpilot" className="w-6 h-6 mr-2" />
+                      <div>
+                        <div className="text-sm font-medium">Trustpilot</div>
+                        <div className="flex items-center">
+                          <div className="flex">
+                            {Array(5).fill(0).map((_, i) => (
+                              <Star key={i} size={14} fill="#00B67A" stroke="none" />
+                            ))}
+                          </div>
+                          <span className="text-xs ml-1">4.8</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <img src="https://cdn.trustpilot.net/brand-assets/1.3.0/logo-white.svg" alt="Trustpilot" className="w-20 h-5 mr-2" />
+                      <div className="flex ml-auto">
+                        {Array(5).fill(0).map((_, i) => (
+                          <Star key={i} size={12} fill="#00B67A" stroke="none" />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      "Empresa confiável com ótimo suporte durante toda minha estadia na Irlanda. Recomendo!"
+                    </p>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-200 dark:border-gray-700 mt-6 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-neutrals-dark dark:text-neutrals-light mb-4 md:mb-0">
               © {currentYear} Casa Estudantes. Todos os direitos reservados.
@@ -149,6 +249,12 @@ const Footer = () => {
                 className="text-sm text-neutrals-dark dark:text-neutrals-light hover:text-teal dark:hover:text-teal-light transition-colors"
               >
                 Política de Privacidade
+              </Link>
+              <Link
+                to="/refund-policy"
+                className="text-sm text-neutrals-dark dark:text-neutrals-light hover:text-teal dark:hover:text-teal-light transition-colors"
+              >
+                Política de Reembolso
               </Link>
             </div>
           </div>

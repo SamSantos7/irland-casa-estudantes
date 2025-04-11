@@ -16,6 +16,8 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import ClientArea from "./pages/ClientArea";
+import RefundPolicy from "./pages/RefundPolicy";
+import Terms from "./pages/Terms";
 
 // Criar uma nova instância do QueryClient fora do componente
 const queryClient = new QueryClient();
@@ -39,6 +41,8 @@ const App = () => {
                   <Route path="/about" element={<About />} />
                   <Route path="/blog" element={<Blog />} />
                   <Route path="/client-area" element={<ClientArea />} />
+                  <Route path="/refund-policy" element={<RefundPolicy />} />
+                  <Route path="/terms" element={<Terms />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

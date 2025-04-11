@@ -40,9 +40,9 @@ const AccommodationCard = ({
   // Configurações para o badge de disponibilidade
   const availabilityConfig = {
     normal: {
-      show: false,
-      text: "",
-      classes: "",
+      show: true,
+      text: "Disponível",
+      classes: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     },
     limited: {
       show: true,
@@ -61,13 +61,13 @@ const AccommodationCard = ({
   return (
     <Link
       to={`/accommodations/${id}`}
-      className="block group bg-white dark:bg-neutrals-dark rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-all duration-300 card-shadow"
+      className="block group bg-white dark:bg-neutrals-dark rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-2 hover:shadow-xl transition-all duration-300 card-shadow"
     >
       <div className="relative">
         <img
           src={imageUrl}
           alt={name}
-          className="w-full h-48 object-cover"
+          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute top-3 left-3 bg-white dark:bg-teal px-3 py-1 rounded-full text-xs font-semibold text-teal dark:text-white">
           {city}
@@ -93,7 +93,7 @@ const AccommodationCard = ({
           <span className="text-sm text-teal dark:text-teal-light font-medium">
             Ver detalhes
           </span>
-          <span className="text-teal dark:text-teal-light">&rarr;</span>
+          <span className="text-teal dark:text-teal-light group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
         </div>
       </div>
     </Link>

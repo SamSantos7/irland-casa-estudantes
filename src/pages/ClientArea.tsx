@@ -1,653 +1,512 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
 import SEO from "../components/SEO";
-import { Button } from "../components/ui/button";
-import { 
-  UserCircle, 
-  Inbox, 
-  FileCheck, 
-  Building, 
-  Clock, 
-  Calendar, 
-  FileText,
-  HelpCircle,
-  LockKeyhole,
-  ChevronRight,
-  LogOut
-} from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowRight, Check, Clock, Download, FileText, Upload, MessageCircle, User, AlertCircle, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Dados simulados para a demonstração
-const mockReservation = {
-  id: "RES-2025-04-11",
-  status: "confirmado", // confirmado, pendente, processando
-  accommodation: "Dublin Central Residence",
-  roomType: "Quarto Individual",
-  checkIn: "01/05/2025",
-  checkOut: "30/07/2025",
-  totalCost: "€3,200",
-  documentsUploaded: [
-    { name: "Passaporte", status: "aprovado", date: "10/04/2025" },
-    { name: "Comprovante de Matrícula", status: "pendente", date: "11/04/2025" },
-  ],
-  documentsNeeded: [
-    "Comprovante de Endereço",
-    "Seguro Viagem"
-  ],
-  paymentStatus: "Depósito pago",
-  paymentDue: "€2,500 (devido em 15/04/2025)"
-};
-
-// Componente de Login
-const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Em um cenário real, aqui teria a autenticação
-    // Por enquanto, apenas simulamos o login
-    onLogin();
-  };
-
-  return (
-    <div className="max-w-md mx-auto bg-white dark:bg-neutrals-dark p-8 rounded-2xl shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center text-neutrals-dark dark:text-white">
-        Acesso Área do Cliente
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-neutrals-dark dark:text-white"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-            Senha
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-neutrals-dark dark:text-white"
-            required
-          />
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <input
-              id="remember"
-              type="checkbox"
-              className="h-4 w-4 text-teal focus:ring-teal dark:text-teal-light dark:focus:ring-teal-light border-gray-300 dark:border-gray-700 rounded"
-            />
-            <label
-              htmlFor="remember"
-              className="ml-2 block text-sm text-neutrals-dark dark:text-white"
-            >
-              Lembrar-me
-            </label>
-          </div>
-          <a
-            href="#"
-            className="text-sm text-teal dark:text-teal-light hover:underline"
-          >
-            Esqueci a senha
-          </a>
-        </div>
-        <Button 
-          type="submit" 
-          className="w-full bg-teal hover:bg-teal/90 dark:bg-teal-light dark:hover:bg-teal-light/90 text-white dark:text-teal"
-        >
-          Entrar
-        </Button>
-        <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
-          Ainda não tem uma conta?{" "}
-          <Link to="/contact" className="text-teal dark:text-teal-light hover:underline">
-            Entre em contato
-          </Link>
-        </div>
-      </form>
-    </div>
-  );
-};
-
-// Status Badge Component
-const StatusBadge = ({ status }: { status: string }) => {
-  let colorClass = "";
-  
-  switch (status) {
-    case "confirmado":
-      colorClass = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      break;
-    case "pendente":
-      colorClass = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      break;
-    case "processando":
-      colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      break;
-    case "aprovado":
-      colorClass = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      break;
-    default:
-      colorClass = "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
-  }
-
-  return (
-    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${colorClass}`}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
-  );
-};
-
-// Área do cliente
-const ClientDashboard = ({ onLogout }: { onLogout: () => void }) => {
-  const [activeTab, setActiveTab] = useState("overview");
-  
-  return (
-    <div className="container py-8">
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Sidebar */}
-        <div className="w-full md:w-64 bg-white dark:bg-neutrals-dark rounded-2xl shadow-sm p-4">
-          <div className="flex items-center p-4">
-            <UserCircle size={40} className="text-teal dark:text-teal-light mr-3" />
-            <div>
-              <h3 className="font-semibold text-neutrals-dark dark:text-white">
-                Maria Silva
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                maria@exemplo.com
-              </p>
-            </div>
-          </div>
-          
-          <div className="mt-6 space-y-1">
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={`w-full flex items-center px-4 py-3 rounded-lg text-left ${
-                activeTab === "overview" 
-                  ? "bg-teal/10 dark:bg-teal-light/10 text-teal dark:text-teal-light font-medium" 
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800 text-neutrals-dark dark:text-white"
-              }`}
-            >
-              <Building size={18} className="mr-3" />
-              <span>Minha Reserva</span>
-            </button>
-            
-            <button
-              onClick={() => setActiveTab("documents")}
-              className={`w-full flex items-center px-4 py-3 rounded-lg text-left ${
-                activeTab === "documents" 
-                  ? "bg-teal/10 dark:bg-teal-light/10 text-teal dark:text-teal-light font-medium" 
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800 text-neutrals-dark dark:text-white"
-              }`}
-            >
-              <FileText size={18} className="mr-3" />
-              <span>Documentos</span>
-            </button>
-            
-            <button
-              onClick={() => setActiveTab("messages")}
-              className={`w-full flex items-center px-4 py-3 rounded-lg text-left ${
-                activeTab === "messages" 
-                  ? "bg-teal/10 dark:bg-teal-light/10 text-teal dark:text-teal-light font-medium" 
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800 text-neutrals-dark dark:text-white"
-              }`}
-            >
-              <Inbox size={18} className="mr-3" />
-              <span>Mensagens</span>
-              <span className="ml-auto bg-teal text-white text-xs font-bold px-2 py-1 rounded-full">
-                2
-              </span>
-            </button>
-            
-            <button
-              onClick={() => setActiveTab("help")}
-              className={`w-full flex items-center px-4 py-3 rounded-lg text-left ${
-                activeTab === "help" 
-                  ? "bg-teal/10 dark:bg-teal-light/10 text-teal dark:text-teal-light font-medium" 
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800 text-neutrals-dark dark:text-white"
-              }`}
-            >
-              <HelpCircle size={18} className="mr-3" />
-              <span>Ajuda</span>
-            </button>
-          </div>
-          
-          <div className="mt-auto pt-6 border-t border-gray-200 dark:border-gray-700">
-            <button
-              onClick={onLogout}
-              className="w-full flex items-center px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg"
-            >
-              <LogOut size={18} className="mr-3" />
-              <span>Sair</span>
-            </button>
-          </div>
-        </div>
-        
-        {/* Content Area */}
-        <div className="flex-1">
-          {activeTab === "overview" && (
-            <div>
-              <div className="bg-white dark:bg-neutrals-dark p-6 rounded-2xl shadow-sm mb-6">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-neutrals-dark dark:text-white">
-                      Detalhes da Reserva
-                    </h2>
-                    <p className="text-gray-500 dark:text-gray-400">
-                      ID: {mockReservation.id}
-                    </p>
-                  </div>
-                  <StatusBadge status={mockReservation.status} />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="font-semibold text-neutrals-dark dark:text-white mb-4">
-                      Informações da Acomodação
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex">
-                        <Building size={18} className="text-gray-500 dark:text-gray-400 mr-3 mt-1 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-neutrals-dark dark:text-white">
-                            {mockReservation.accommodation}
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {mockReservation.roomType}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex">
-                        <Calendar size={18} className="text-gray-500 dark:text-gray-400 mr-3 mt-1 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-neutrals-dark dark:text-white">
-                            Check-in: {mockReservation.checkIn}
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Check-out: {mockReservation.checkOut}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-semibold text-neutrals-dark dark:text-white mb-4">
-                      Informações de Pagamento
-                    </h3>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-neutrals-dark dark:text-white">
-                          Status: <span className="font-medium">{mockReservation.paymentStatus}</span>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-neutrals-dark dark:text-white">
-                          Valor pendente: <span className="font-medium">{mockReservation.paymentDue}</span>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-neutrals-dark dark:text-white">
-                          Valor total: <span className="font-medium">{mockReservation.totalCost}</span>
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6">
-                      <Button className="w-full bg-teal hover:bg-teal/90 dark:bg-teal-light dark:hover:bg-teal-light/90 text-white dark:text-teal">
-                        Realizar Pagamento
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white dark:bg-neutrals-dark p-6 rounded-2xl shadow-sm mb-6">
-                <h3 className="font-semibold text-neutrals-dark dark:text-white mb-4">
-                  Próximos Passos
-                </h3>
-                <ul className="space-y-4">
-                  <li className="flex">
-                    <div className="mr-4 bg-teal/10 dark:bg-teal-light/10 rounded-full h-8 w-8 flex items-center justify-center">
-                      <FileText size={16} className="text-teal dark:text-teal-light" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-neutrals-dark dark:text-white">
-                        Enviar documentos pendentes
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Complete o upload dos documentos necessários.
-                      </p>
-                    </div>
-                    <ChevronRight size={20} className="text-gray-400 dark:text-gray-600 ml-auto self-center" />
-                  </li>
-                  <li className="flex">
-                    <div className="mr-4 bg-teal/10 dark:bg-teal-light/10 rounded-full h-8 w-8 flex items-center justify-center">
-                      <LockKeyhole size={16} className="text-teal dark:text-teal-light" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-neutrals-dark dark:text-white">
-                        Confirmar detalhes de chegada
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Informe seu horário de chegada e detalhes do voo.
-                      </p>
-                    </div>
-                    <ChevronRight size={20} className="text-gray-400 dark:text-gray-600 ml-auto self-center" />
-                  </li>
-                </ul>
-              </div>
-              
-              <div className="bg-gradient-to-r from-teal to-teal-light dark:from-teal dark:to-teal-light p-6 rounded-2xl text-white">
-                <h3 className="font-semibold mb-2">Precisa de ajuda?</h3>
-                <p className="mb-4 opacity-90">
-                  Nossa equipe está disponível para auxiliar com quaisquer dúvidas sobre sua reserva.
-                </p>
-                <div className="flex space-x-3">
-                  <Button 
-                    variant="outline" 
-                    className="border-white text-white hover:bg-white hover:text-teal dark:hover:text-teal"
-                  >
-                    Suporte via WhatsApp
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="border-white text-white hover:bg-white hover:text-teal dark:hover:text-teal"
-                  >
-                    Enviar Mensagem
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {activeTab === "documents" && (
-            <div>
-              <div className="bg-white dark:bg-neutrals-dark p-6 rounded-2xl shadow-sm mb-6">
-                <h2 className="text-2xl font-bold text-neutrals-dark dark:text-white mb-6">
-                  Documentos
-                </h2>
-                
-                <div className="mb-8">
-                  <h3 className="font-semibold text-neutrals-dark dark:text-white mb-4">
-                    Documentos Enviados
-                  </h3>
-                  <div className="space-y-4">
-                    {mockReservation.documentsUploaded.map((doc, index) => (
-                      <div 
-                        key={index}
-                        className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-                      >
-                        <div className="flex items-center">
-                          <FileCheck size={20} className="text-gray-500 dark:text-gray-400 mr-3" />
-                          <div>
-                            <p className="font-medium text-neutrals-dark dark:text-white">
-                              {doc.name}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Enviado em {doc.date}
-                            </p>
-                          </div>
-                        </div>
-                        <div>
-                          <StatusBadge status={doc.status} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-neutrals-dark dark:text-white mb-4">
-                    Documentos Pendentes
-                  </h3>
-                  {mockReservation.documentsNeeded.length > 0 ? (
-                    <div className="space-y-4">
-                      {mockReservation.documentsNeeded.map((doc, index) => (
-                        <div 
-                          key={index}
-                          className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-                        >
-                          <div className="flex items-center">
-                            <FileText size={20} className="text-gray-500 dark:text-gray-400 mr-3" />
-                            <p className="font-medium text-neutrals-dark dark:text-white">
-                              {doc}
-                            </p>
-                          </div>
-                          <Button size="sm">
-                            Enviar
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 dark:text-gray-400">
-                      Todos os documentos necessários foram enviados.
-                    </p>
-                  )}
-                </div>
-                
-                <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-950 border-l-4 border-yellow-500 text-yellow-700 dark:text-yellow-300">
-                  <p className="text-sm">
-                    <strong>Importante:</strong> Todos os documentos devem ser enviados até 7 dias antes do check-in.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {activeTab === "messages" && (
-            <div className="bg-white dark:bg-neutrals-dark p-6 rounded-2xl shadow-sm">
-              <h2 className="text-2xl font-bold text-neutrals-dark dark:text-white mb-6">
-                Mensagens
-              </h2>
-              
-              <div className="space-y-4">
-                <div className="p-4 border border-teal border-l-4 rounded-lg bg-teal/5 dark:bg-teal-light/5">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium text-neutrals-dark dark:text-white">
-                      Confirmação de Reserva
-                    </h4>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      11/04/2025
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                    Sua reserva para Dublin Central Residence foi confirmada. Confira os detalhes e próximos passos.
-                  </p>
-                  <Button size="sm" variant="outline">
-                    Ler Mensagem
-                  </Button>
-                </div>
-                
-                <div className="p-4 border border-teal border-l-4 rounded-lg bg-teal/5 dark:bg-teal-light/5">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium text-neutrals-dark dark:text-white">
-                      Documentos - Ação Necessária
-                    </h4>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      11/04/2025
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                    Precisamos que você envie alguns documentos adicionais para finalizar seu processo de reserva.
-                  </p>
-                  <Button size="sm" variant="outline">
-                    Ler Mensagem
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="mt-8">
-                <Button className="w-full">
-                  Enviar Nova Mensagem
-                </Button>
-              </div>
-            </div>
-          )}
-          
-          {activeTab === "help" && (
-            <div className="bg-white dark:bg-neutrals-dark p-6 rounded-2xl shadow-sm">
-              <h2 className="text-2xl font-bold text-neutrals-dark dark:text-white mb-6">
-                Central de Ajuda
-              </h2>
-              
-              <div className="mb-8">
-                <h3 className="font-semibold text-neutrals-dark dark:text-white mb-4">
-                  Perguntas Frequentes
-                </h3>
-                <div className="space-y-4">
-                  <details className="group border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <summary className="flex items-center justify-between p-4 cursor-pointer font-medium text-neutrals-dark dark:text-white">
-                      Como funciona o processo de check-in?
-                      <svg className="w-5 h-5 group-open:rotate-180 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </summary>
-                    <div className="p-4 pt-0 text-gray-600 dark:text-gray-300">
-                      <p>
-                        O check-in é realizado no endereço da acomodação entre 14h e 20h. 
-                        Você receberá instruções detalhadas por e-mail uma semana antes da sua chegada.
-                        Caso seu voo chegue fora desse horário, entre em contato conosco para arranjos especiais.
-                      </p>
-                    </div>
-                  </details>
-                  
-                  <details className="group border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <summary className="flex items-center justify-between p-4 cursor-pointer font-medium text-neutrals-dark dark:text-white">
-                      Quando devo pagar o restante do valor da reserva?
-                      <svg className="w-5 h-5 group-open:rotate-180 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </summary>
-                    <div className="p-4 pt-0 text-gray-600 dark:text-gray-300">
-                      <p>
-                        O pagamento completo deve ser efetuado até 15 dias antes da data de check-in.
-                        Você receberá lembretes por e-mail e poderá efetuar o pagamento aqui na sua área do cliente.
-                      </p>
-                    </div>
-                  </details>
-                  
-                  <details className="group border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <summary className="flex items-center justify-between p-4 cursor-pointer font-medium text-neutrals-dark dark:text-white">
-                      Como posso solicitar alterações na minha reserva?
-                      <svg className="w-5 h-5 group-open:rotate-180 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </summary>
-                    <div className="p-4 pt-0 text-gray-600 dark:text-gray-300">
-                      <p>
-                        Para solicitar alterações na sua reserva (datas, tipo de quarto, etc.), 
-                        envie uma mensagem pela seção "Mensagens" da sua área do cliente ou 
-                        entre em contato via WhatsApp. Nossa equipe responderá em até 24 horas úteis.
-                      </p>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              
-              <div className="mb-8">
-                <h3 className="font-semibold text-neutrals-dark dark:text-white mb-4">
-                  Contato Direto
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col items-center text-center">
-                    <div className="w-12 h-12 bg-teal/10 dark:bg-teal-light/10 flex items-center justify-center rounded-full mb-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal dark:text-teal-light">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                      </svg>
-                    </div>
-                    <h4 className="font-medium text-neutrals-dark dark:text-white mb-1">
-                      WhatsApp
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                      Resposta em até 2 horas
-                    </p>
-                    <Button size="sm" variant="outline">
-                      Conversar no WhatsApp
-                    </Button>
-                  </div>
-                  
-                  <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col items-center text-center">
-                    <div className="w-12 h-12 bg-teal/10 dark:bg-teal-light/10 flex items-center justify-center rounded-full mb-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal dark:text-teal-light">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                      </svg>
-                    </div>
-                    <h4 className="font-medium text-neutrals-dark dark:text-white mb-1">
-                      E-mail
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                      Resposta em até 24 horas
-                    </p>
-                    <Button size="sm" variant="outline">
-                      Enviar E-mail
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
+type ReservationStatus = 'pending' | 'reviewing' | 'approved' | 'completed';
 
 const ClientArea = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-  const handleLogin = () => {
-    setIsLoggedIn(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  // Mock user data - would come from API in real app
+  const userMock = {
+    name: "Maria Silva",
+    email: "maria.silva@example.com",
+    profileImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=800&q=60",
+    reservationStatus: 'reviewing' as ReservationStatus,
+    accommodation: {
+      id: 1,
+      name: "Dublin Central Residence",
+      city: "Dublin",
+      roomType: "individual",
+      checkIn: "2025-07-01",
+      checkOut: "2025-12-31",
+      image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
+    },
+    documents: {
+      passport: { 
+        status: 'approved',
+        filename: 'passport.pdf',
+        uploaded: '2025-04-05' 
+      },
+      enrollmentLetter: { 
+        status: 'pending',
+        filename: 'enrollment_letter.pdf',
+        uploaded: '2025-04-05' 
+      },
+      paymentProof: { 
+        status: 'not_uploaded',
+        filename: '',
+        uploaded: '' 
+      }
+    },
+    messages: [
+      {
+        id: 1,
+        sender: 'system',
+        content: 'Bem-vindo(a) à área do cliente! Aqui você pode acompanhar o status da sua reserva.',
+        date: '2025-04-05T10:00:00'
+      },
+      {
+        id: 2,
+        sender: 'agent',
+        content: 'Olá Maria, verificamos seu passaporte e está tudo certo. Ainda precisamos analisar sua carta de matrícula.',
+        date: '2025-04-06T14:30:00'
+      }
+    ]
   };
-  
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, this would authenticate with a backend
+    if (email && password) {
+      setIsLoggedIn(true);
+    }
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setEmail('');
+    setPassword('');
   };
-  
+
+  const getStatusDisplay = (status: ReservationStatus) => {
+    switch (status) {
+      case 'pending':
+        return { label: 'Pendente', icon: <Clock className="h-5 w-5 text-amber-500" />, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' };
+      case 'reviewing':
+        return { label: 'Em análise', icon: <FileText className="h-5 w-5 text-blue-500" />, color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/30' };
+      case 'approved':
+        return { label: 'Aprovada', icon: <Check className="h-5 w-5 text-green-500" />, color: 'text-green-500 bg-green-50 dark:bg-green-950/30' };
+      case 'completed':
+        return { label: 'Concluída', icon: <Check className="h-5 w-5 text-green-500" />, color: 'text-green-500 bg-green-50 dark:bg-green-950/30' };
+      default:
+        return { label: 'Desconhecido', icon: <AlertCircle className="h-5 w-5 text-gray-500" />, color: 'text-gray-500 bg-gray-50 dark:bg-gray-800' };
+    }
+  };
+
+  const getDocumentStatusDisplay = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return { label: 'Aprovado', icon: <Check className="h-4 w-4 text-green-500" />, color: 'text-green-500 bg-green-50 dark:bg-green-950/30' };
+      case 'pending':
+        return { label: 'Em análise', icon: <Clock className="h-4 w-4 text-amber-500" />, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' };
+      case 'rejected':
+        return { label: 'Reprovado', icon: <AlertCircle className="h-4 w-4 text-red-500" />, color: 'text-red-500 bg-red-50 dark:bg-red-950/30' };
+      case 'not_uploaded':
+        return { label: 'Não enviado', icon: <Upload className="h-4 w-4 text-gray-500" />, color: 'text-gray-500 bg-gray-50 dark:bg-gray-800' };
+      default:
+        return { label: 'Desconhecido', icon: <AlertCircle className="h-4 w-4 text-gray-500" />, color: 'text-gray-500 bg-gray-50 dark:bg-gray-800' };
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' }).format(date);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO
+      <SEO 
         title="Área do Cliente | Irlanda Casa Estudantes"
-        description="Acesse sua área exclusiva de cliente para gerenciar sua reserva, documentos e pagamentos."
+        description="Acesse sua área de cliente para gerenciar sua reserva, enviar documentos e acompanhar o status da sua acomodação estudantil na Irlanda."
         canonical="/client-area"
       />
       <Navbar />
-      
-      <main className="flex-grow pt-24">
-        <section className="bg-teal dark:bg-teal py-12">
-          <div className="container">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Área do Cliente
-            </h1>
-            <p className="text-white/90">
-              Gerencie sua reserva, documentos e pagamentos
-            </p>
-          </div>
-        </section>
-        
-        <section className="py-12">
-          {isLoggedIn ? (
-            <ClientDashboard onLogout={handleLogout} />
+
+      <main className="flex-grow pt-24 pb-16">
+        <div className="container">
+          {!isLoggedIn ? (
+            <div className="max-w-md mx-auto">
+              <Card>
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-2xl font-bold text-center">
+                    Área do Cliente
+                  </CardTitle>
+                  <CardDescription className="text-center">
+                    Faça login para acessar sua reserva
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                  <form onSubmit={handleLogin}>
+                    <div className="grid gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          placeholder="seu.email@exemplo.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="password">Senha</Label>
+                          <Link to="/forgot-password" className="text-sm text-teal hover:underline">
+                            Esqueceu a senha?
+                          </Link>
+                        </div>
+                        <Input 
+                          id="password" 
+                          type="password" 
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">
+                        Entrar
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+                <CardFooter className="flex flex-col">
+                  <p className="text-sm text-center text-muted-foreground mb-2">
+                    Ainda não tem uma conta?
+                  </p>
+                  <p className="text-sm text-center text-muted-foreground">
+                    Faça sua reserva e receba um email com instruções para criar sua conta.
+                  </p>
+                </CardFooter>
+              </Card>
+            </div>
           ) : (
-            <LoginForm onLogin={handleLogin} />
+            <div>
+              {/* Cliente Logado */}
+              <div className="mb-8 flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={userMock.profileImage} alt={userMock.name} />
+                    <AvatarFallback>{userMock.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h1 className="text-2xl font-bold text-neutrals-dark dark:text-white">
+                      Olá, {userMock.name.split(' ')[0]}!
+                    </h1>
+                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm ${getStatusDisplay(userMock.reservationStatus).color}`}>
+                      {getStatusDisplay(userMock.reservationStatus).icon}
+                      <span>Reserva {getStatusDisplay(userMock.reservationStatus).label}</span>
+                    </div>
+                  </div>
+                </div>
+                <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
+                  <LogOut className="h-4 w-4" />
+                  <span>Sair</span>
+                </Button>
+              </div>
+
+              <Tabs defaultValue="dashboard" className="mb-8">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                  <TabsTrigger value="documents">Documentos</TabsTrigger>
+                  <TabsTrigger value="messages">Mensagens</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="dashboard">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <Card className="col-span-1 lg:col-span-2">
+                      <CardHeader>
+                        <CardTitle>Sua Reserva</CardTitle>
+                        <CardDescription>Detalhes da sua acomodação</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-col md:flex-row gap-6">
+                          <div className="w-full md:w-1/3">
+                            <img 
+                              src={userMock.accommodation.image} 
+                              alt={userMock.accommodation.name} 
+                              className="rounded-lg object-cover aspect-square w-full"
+                            />
+                          </div>
+                          <div className="w-full md:w-2/3 space-y-4">
+                            <div>
+                              <h3 className="text-lg font-semibold">{userMock.accommodation.name}</h3>
+                              <p className="text-muted-foreground">{userMock.accommodation.city}</p>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-sm text-muted-foreground">Check-in</p>
+                                <p className="font-medium">{formatDate(userMock.accommodation.checkIn)}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-muted-foreground">Check-out</p>
+                                <p className="font-medium">{formatDate(userMock.accommodation.checkOut)}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-muted-foreground">Tipo de quarto</p>
+                                <p className="font-medium">
+                                  {userMock.accommodation.roomType === 'individual' ? 'Quarto Individual' : 
+                                   userMock.accommodation.roomType === 'shared' ? 'Quarto Compartilhado' : 'Quarto de Casal'}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-muted-foreground">Duração</p>
+                                <p className="font-medium">6 meses</p>
+                              </div>
+                            </div>
+                            
+                            <Button variant="outline" className="flex items-center gap-2">
+                              <ArrowRight className="h-4 w-4" />
+                              <span>Ver detalhes completos</span>
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Status da Documentação</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span>Passaporte</span>
+                          </div>
+                          <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.passport.status).color}`}>
+                            {getDocumentStatusDisplay(userMock.documents.passport.status).icon}
+                            <span>{getDocumentStatusDisplay(userMock.documents.passport.status).label}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span>Carta de Matrícula</span>
+                          </div>
+                          <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).color}`}>
+                            {getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).icon}
+                            <span>{getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).label}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span>Comprovante de Pagamento</span>
+                          </div>
+                          <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.paymentProof.status).color}`}>
+                            {getDocumentStatusDisplay(userMock.documents.paymentProof.status).icon}
+                            <span>{getDocumentStatusDisplay(userMock.documents.paymentProof.status).label}</span>
+                          </div>
+                        </div>
+
+                        <div className="pt-4">
+                          <Button variant="outline" className="w-full flex items-center gap-2">
+                            <Upload className="h-4 w-4" />
+                            <span>Gerenciar documentos</span>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                    <Card className="col-span-1 lg:col-span-2">
+                      <CardHeader>
+                        <CardTitle>Mensagens Recentes</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {userMock.messages.map((message) => (
+                          <div key={message.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="font-medium">
+                                {message.sender === 'system' ? 'Sistema' : 'Atendente'}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(message.date).toLocaleString('pt-BR')}
+                              </div>
+                            </div>
+                            <p className="text-sm">{message.content}</p>
+                          </div>
+                        ))}
+                        
+                        <Button className="w-full flex items-center gap-2 mt-2">
+                          <MessageCircle className="h-4 w-4" />
+                          <span>Enviar Mensagem</span>
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Links Úteis</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <Button variant="outline" className="w-full flex items-center gap-2 justify-start">
+                          <User className="h-4 w-4" />
+                          <span>Editar Dados Pessoais</span>
+                        </Button>
+                        
+                        <Button variant="outline" className="w-full flex items-center gap-2 justify-start">
+                          <MessageCircle className="h-4 w-4" />
+                          <span>Falar com Atendente</span>
+                        </Button>
+                        
+                        <Button variant="outline" className="w-full flex items-center gap-2 justify-start">
+                          <Download className="h-4 w-4" />
+                          <span>Baixar Informações</span>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="documents">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Documentos</CardTitle>
+                      <CardDescription>Gerencie os documentos da sua reserva</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div className="p-4 border border-border rounded-lg">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                              <h3 className="font-medium">Passaporte</h3>
+                              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                <span>{userMock.documents.passport.filename}</span>
+                                <span>•</span>
+                                <span>Enviado em {formatDate(userMock.documents.passport.uploaded)}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.passport.status).color}`}>
+                                {getDocumentStatusDisplay(userMock.documents.passport.status).icon}
+                                <span>{getDocumentStatusDisplay(userMock.documents.passport.status).label}</span>
+                              </div>
+                              <Button variant="outline" size="sm">
+                                <Upload className="h-4 w-4" />
+                                <span className="ml-2">Atualizar</span>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 border border-border rounded-lg">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                              <h3 className="font-medium">Carta de Matrícula</h3>
+                              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                <span>{userMock.documents.enrollmentLetter.filename}</span>
+                                <span>•</span>
+                                <span>Enviado em {formatDate(userMock.documents.enrollmentLetter.uploaded)}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).color}`}>
+                                {getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).icon}
+                                <span>{getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).label}</span>
+                              </div>
+                              <Button variant="outline" size="sm">
+                                <Upload className="h-4 w-4" />
+                                <span className="ml-2">Atualizar</span>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 border border-border rounded-lg">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                              <h3 className="font-medium">Comprovante de Pagamento</h3>
+                              <div className="text-sm text-muted-foreground">
+                                {userMock.documents.paymentProof.status === 'not_uploaded' ? (
+                                  <span>Nenhum arquivo enviado</span>
+                                ) : (
+                                  <>
+                                    <span>{userMock.documents.paymentProof.filename}</span>
+                                    <span>•</span>
+                                    <span>Enviado em {formatDate(userMock.documents.paymentProof.uploaded)}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.paymentProof.status).color}`}>
+                                {getDocumentStatusDisplay(userMock.documents.paymentProof.status).icon}
+                                <span>{getDocumentStatusDisplay(userMock.documents.paymentProof.status).label}</span>
+                              </div>
+                              <Button variant="outline" size="sm">
+                                <Upload className="h-4 w-4" />
+                                <span className="ml-2">{userMock.documents.paymentProof.status === 'not_uploaded' ? 'Enviar' : 'Atualizar'}</span>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="messages">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Mensagens</CardTitle>
+                      <CardDescription>Comunicação com nossa equipe</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {userMock.messages.map((message) => (
+                          <div key={message.id} className="p-4 border border-border rounded-lg">
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="font-medium">
+                                {message.sender === 'system' ? 'Sistema' : 'Atendente'}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(message.date).toLocaleString('pt-BR')}
+                              </div>
+                            </div>
+                            <p className="text-sm">{message.content}</p>
+                          </div>
+                        ))}
+                        
+                        <div className="pt-4">
+                          <div className="mb-4">
+                            <Label htmlFor="message">Nova mensagem</Label>
+                            <div className="mt-2">
+                              <textarea
+                                id="message"
+                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="Escreva sua mensagem..."
+                              ></textarea>
+                            </div>
+                          </div>
+                          
+                          <Button className="w-full flex items-center gap-2">
+                            <MessageCircle className="h-4 w-4" />
+                            <span>Enviar Mensagem</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
           )}
-        </section>
+        </div>
       </main>
       
       <Footer />
-      <WhatsAppButton phoneNumber="353000000000" />
+      <WhatsAppButton phoneNumber="353000000000" showOptions={true} />
     </div>
   );
 };
