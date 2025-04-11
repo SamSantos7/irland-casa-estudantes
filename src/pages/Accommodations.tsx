@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -6,6 +5,8 @@ import Footer from "../components/Footer";
 import AccommodationCard from "../components/AccommodationCard";
 import WhatsAppButton from "../components/WhatsAppButton";
 import { Filter, X, Check } from "lucide-react";
+import { RoomType } from "../components/AccommodationCard";
+import SEO from "../components/SEO";
 
 // Sample accommodations data
 const accommodationsData = [
@@ -13,7 +14,7 @@ const accommodationsData = [
     id: 1,
     name: "Dublin Central Residence",
     city: "dublin",
-    roomType: "individual",
+    roomType: "individual" as RoomType,
     pricePerWeek: 250,
     imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
   },
@@ -21,7 +22,7 @@ const accommodationsData = [
     id: 2,
     name: "Dublin Student Loft",
     city: "dublin",
-    roomType: "shared",
+    roomType: "shared" as RoomType,
     pricePerWeek: 180,
     imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
   },
@@ -29,7 +30,7 @@ const accommodationsData = [
     id: 3,
     name: "Dublin Bay View",
     city: "dublin",
-    roomType: "double",
+    roomType: "double" as RoomType,
     pricePerWeek: 320,
     imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
   },
@@ -37,7 +38,7 @@ const accommodationsData = [
     id: 4,
     name: "Cork Student House",
     city: "cork",
-    roomType: "individual",
+    roomType: "individual" as RoomType,
     pricePerWeek: 220,
     imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
   },
@@ -45,7 +46,7 @@ const accommodationsData = [
     id: 5,
     name: "Cork City Apartment",
     city: "cork",
-    roomType: "shared",
+    roomType: "shared" as RoomType,
     pricePerWeek: 170,
     imageUrl: "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
   },
@@ -53,7 +54,7 @@ const accommodationsData = [
     id: 6,
     name: "Galway Campus Suite",
     city: "galway",
-    roomType: "individual",
+    roomType: "individual" as RoomType,
     pricePerWeek: 240,
     imageUrl: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
   },
@@ -61,7 +62,7 @@ const accommodationsData = [
     id: 7,
     name: "Galway Seaside Home",
     city: "galway",
-    roomType: "double",
+    roomType: "double" as RoomType,
     pricePerWeek: 300,
     imageUrl: "https://images.unsplash.com/photo-1499916078039-922301b0eb9b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
   },
@@ -69,7 +70,7 @@ const accommodationsData = [
     id: 8,
     name: "Limerick City View",
     city: "limerick",
-    roomType: "individual",
+    roomType: "individual" as RoomType,
     pricePerWeek: 210,
     imageUrl: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
   },
@@ -77,7 +78,7 @@ const accommodationsData = [
     id: 9,
     name: "Limerick Campus Residence",
     city: "limerick",
-    roomType: "shared",
+    roomType: "shared" as RoomType,
     pricePerWeek: 160,
     imageUrl: "https://images.unsplash.com/photo-1559599238-3d0d41863f8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDF8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
   },
@@ -112,17 +113,14 @@ const Accommodations = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    // Get filters from URL params
     const city = searchParams.get("city");
     const roomType = searchParams.get("roomType");
     const checkIn = searchParams.get("checkIn");
     const checkOut = searchParams.get("checkOut");
 
-    // Initialize filters based on URL params
     if (city) setSelectedCities([city]);
     if (roomType) setSelectedRoomTypes([roomType]);
 
-    // Apply filters
     applyFilters(
       city ? [city] : [],
       roomType ? [roomType] : [],
@@ -194,10 +192,13 @@ const Accommodations = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO 
+        title="Acomodações Estudantis na Irlanda | Irlanda Casa Estudantes"
+        description="Encontre acomodações estudantis em Dublin, Cork, Galway e Limerick. Opções de quartos individuais, compartilhados e casais com suporte em português."
+      />
       <Navbar />
 
       <main className="flex-grow pt-24">
-        {/* Page Header */}
         <section className="bg-teal dark:bg-teal py-12">
           <div className="container">
             <h1 className="text-3xl font-bold text-white">Acomodações Estudantis</h1>
@@ -210,7 +211,6 @@ const Accommodations = () => {
         <section className="py-8">
           <div className="container">
             <div className="flex flex-col lg:flex-row gap-8">
-              {/* Mobile Filter Toggle */}
               <button
                 onClick={toggleFiltersView}
                 className="lg:hidden flex items-center justify-center gap-2 w-full py-2 border border-gray-300 dark:border-gray-700 rounded-lg mb-4"
@@ -219,7 +219,6 @@ const Accommodations = () => {
                 <span>{showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}</span>
               </button>
 
-              {/* Filters */}
               <div
                 className={`w-full lg:w-1/4 ${
                   showFilters ? "block" : "hidden"
@@ -237,7 +236,6 @@ const Accommodations = () => {
                   </button>
                 </div>
 
-                {/* City Filter */}
                 <div className="mb-6">
                   <h3 className="text-lg font-medium mb-3 text-neutrals-dark dark:text-white">
                     Cidade
@@ -268,7 +266,6 @@ const Accommodations = () => {
                   </div>
                 </div>
 
-                {/* Room Type Filter */}
                 <div className="mb-6">
                   <h3 className="text-lg font-medium mb-3 text-neutrals-dark dark:text-white">
                     Tipo de Quarto
@@ -299,7 +296,6 @@ const Accommodations = () => {
                   </div>
                 </div>
 
-                {/* Price Range Filter */}
                 <div>
                   <h3 className="text-lg font-medium mb-3 text-neutrals-dark dark:text-white">
                     Faixa de Preço
@@ -331,7 +327,6 @@ const Accommodations = () => {
                 </div>
               </div>
 
-              {/* Accommodations Grid */}
               <div className="w-full lg:w-3/4">
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white">
@@ -341,7 +336,15 @@ const Accommodations = () => {
                 {filteredAccommodations.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredAccommodations.map((accommodation) => (
-                      <AccommodationCard key={accommodation.id} {...accommodation} />
+                      <AccommodationCard 
+                        key={accommodation.id}
+                        id={accommodation.id}
+                        name={accommodation.name}
+                        city={accommodation.city}
+                        roomType={accommodation.roomType}
+                        pricePerWeek={accommodation.pricePerWeek}
+                        imageUrl={accommodation.imageUrl}
+                      />
                     ))}
                   </div>
                 ) : (

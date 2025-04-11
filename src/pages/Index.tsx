@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SearchBar from "../components/SearchBar";
 import AccommodationCard from "../components/AccommodationCard";
+import { RoomType } from "../components/AccommodationCard";
 import TestimonialCard from "../components/TestimonialCard";
 import FaqSection from "../components/FaqSection";
 import HowItWorks from "../components/HowItWorks";
@@ -16,7 +17,7 @@ const featuredAccommodations = [
     id: 1,
     name: "Dublin Central Residence",
     city: "Dublin",
-    roomType: "individual",
+    roomType: "individual" as RoomType,
     pricePerWeek: 250,
     imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
   },
@@ -24,7 +25,7 @@ const featuredAccommodations = [
     id: 2,
     name: "Cork Student House",
     city: "Cork",
-    roomType: "shared",
+    roomType: "shared" as RoomType,
     pricePerWeek: 180,
     imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
   },
@@ -32,7 +33,7 @@ const featuredAccommodations = [
     id: 3,
     name: "Galway Campus Suite",
     city: "Galway",
-    roomType: "double",
+    roomType: "double" as RoomType,
     pricePerWeek: 320,
     imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
   },
@@ -40,7 +41,7 @@ const featuredAccommodations = [
     id: 4,
     name: "Limerick City View",
     city: "Limerick",
-    roomType: "individual",
+    roomType: "individual" as RoomType,
     pricePerWeek: 230,
     imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
   },
@@ -147,7 +148,15 @@ const Index = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredAccommodations.map((accommodation) => (
-              <AccommodationCard key={accommodation.id} {...accommodation} />
+              <AccommodationCard 
+                key={accommodation.id}
+                id={accommodation.id}
+                name={accommodation.name}
+                city={accommodation.city}
+                roomType={accommodation.roomType}
+                pricePerWeek={accommodation.pricePerWeek}
+                imageUrl={accommodation.imageUrl}
+              />
             ))}
           </div>
         </div>

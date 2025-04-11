@@ -2,11 +2,13 @@
 import { Link } from "react-router-dom";
 import { Euro } from "lucide-react";
 
-interface AccommodationCardProps {
+export type RoomType = "individual" | "shared" | "double";
+
+export interface AccommodationCardProps {
   id: number;
   name: string;
   city: string;
-  roomType: "individual" | "shared" | "double";
+  roomType: RoomType;
   pricePerWeek: number;
   imageUrl: string;
 }
@@ -20,7 +22,7 @@ const AccommodationCard = ({
   imageUrl,
 }: AccommodationCardProps) => {
   // Função para traduzir o tipo de quarto
-  const translateRoomType = (type: string) => {
+  const translateRoomType = (type: RoomType) => {
     switch (type) {
       case "individual":
         return "Quarto Individual";
