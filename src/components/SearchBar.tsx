@@ -35,6 +35,31 @@ const SearchBar = () => {
     navigate(`/accommodations?${params.toString()}`);
   };
 
+  // Function to check if a date is a Saturday or Sunday
+  const isWeekendDay = (dateString: string): boolean => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    const day = date.getDay();
+    // 0 is Sunday, 6 is Saturday
+    return day === 0 || day === 6;
+  };
+
+  // Handle date changes and validate weekend only
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>, dateType: 'checkIn' | 'checkOut') => {
+    const selectedDate = e.target.value;
+    
+    if (selectedDate && !isWeekendDay(selectedDate)) {
+      alert("Por favor, selecione apenas datas de sábado ou domingo para check-in e check-out.");
+      return;
+    }
+    
+    if (dateType === 'checkIn') {
+      setCheckIn(selectedDate);
+    } else {
+      setCheckOut(selectedDate);
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-neutrals-dark rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-4xl mx-auto">
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -62,14 +87,14 @@ const SearchBar = () => {
 
         <div>
           <label htmlFor="checkIn" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-            Check-in
+            Check-in (Sáb/Dom)
           </label>
           <div className="relative">
             <input
               type="date"
               id="checkIn"
               value={checkIn}
-              onChange={(e) => setCheckIn(e.target.value)}
+              onChange={(e) => handleDateChange(e, 'checkIn')}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
             />
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-teal dark:text-teal-light" size={18} />
@@ -78,14 +103,14 @@ const SearchBar = () => {
 
         <div>
           <label htmlFor="checkOut" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-            Check-out
+            Check-out (Sáb/Dom)
           </label>
           <div className="relative">
             <input
               type="date"
               id="checkOut"
               value={checkOut}
-              onChange={(e) => setCheckOut(e.target.value)}
+              onChange={(e) => handleDateChange(e, 'checkOut')}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
             />
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-teal dark:text-teal-light" size={18} />

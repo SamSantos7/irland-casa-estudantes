@@ -2,9 +2,10 @@
 import { MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
 
 interface WhatsAppButtonProps {
-  phoneNumber: string;
+  phoneNumber?: string;
   message?: string;
   className?: string;
   showOptions?: boolean;
@@ -12,8 +13,8 @@ interface WhatsAppButtonProps {
 }
 
 const WhatsAppButton = ({
-  phoneNumber,
-  message = "Olá! Gostaria de mais informações sobre as acomodações estudantis.",
+  phoneNumber = "5521970286372",
+  message = "Olá, gostaria de fazer uma reserva de acomodação estudantil na Irlanda.",
   className = "",
   showOptions = false,
   fixed = true,

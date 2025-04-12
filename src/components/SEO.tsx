@@ -45,6 +45,9 @@ const SEO = ({
       <meta property="twitter:description" content={description} />
       <meta property="twitter:image" content={image} />
       <meta property="twitter:image:alt" content={altText} />
+      
+      {/* Additional SEO meta tags */}
+      <meta name="keywords" content="acomodação estudantil irlanda, quartos estudantes dublin, moradia irlandesa, alojamento cork, galway estudantes, limerick acomodação, intercâmbio irlanda" />
     </Helmet>
   );
 };
