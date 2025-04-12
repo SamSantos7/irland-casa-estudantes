@@ -5,6 +5,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const whatsappNumber = "5521970286372";
 
   return (
     <footer className="bg-neutrals-light dark:bg-neutrals-dark py-12 mt-16">
@@ -108,13 +109,13 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4 text-neutrals-dark dark:text-white">Fale Conosco</h3>
             <a
-              href="https://wa.me/353000000000"
+              href={`https://wa.me/${whatsappNumber}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm text-neutrals-dark dark:text-neutrals-light hover:text-teal dark:hover:text-teal-light transition-colors mb-4"
             >
               <MessageCircle size={16} />
-              <span>WhatsApp</span>
+              <span>WhatsApp: +55 21 97028-6372</span>
             </a>
             <div className="flex space-x-4 mt-4">
               <a

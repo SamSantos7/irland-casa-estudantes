@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Check, Clock, Download, FileText, Upload, MessageCircle, User, AlertCircle, LogOut } from "lucide-react";
+import { ArrowRight, Check, Clock, Download, FileText, Upload, MessageCircle, User, AlertCircle, LogOut, Bath, MapPin, Bed, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ReservationProgressBar from '../components/ReservationProgressBar';
 
 type ReservationStatus = 'pending' | 'reviewing' | 'approved' | 'completed';
 
@@ -31,7 +32,11 @@ const ClientArea = () => {
       id: 1,
       name: "Dublin Central Residence",
       city: "Dublin",
-      roomType: "individual",
+      provider: "International Student Housing Ltd.",
+      roomType: "Compartilhado (2 pessoas)",
+      bathroomType: "Compartilhado (4 pessoas)",
+      gender: "Feminino",
+      neighborhood: "Rathmines",
       checkIn: "2025-07-01",
       checkOut: "2025-12-31",
       image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
@@ -65,6 +70,33 @@ const ClientArea = () => {
         sender: 'agent',
         content: 'Olá Maria, verificamos seu passaporte e está tudo certo. Ainda precisamos analisar sua carta de matrícula.',
         date: '2025-04-06T14:30:00'
+      }
+    ],
+    progressSteps: [
+      {
+        id: 'step1',
+        label: 'Reserva enviada',
+        status: 'completed' as const
+      },
+      {
+        id: 'step2',
+        label: 'Documentação enviada',
+        status: 'in_progress' as const
+      },
+      {
+        id: 'step3',
+        label: 'Aguardando confirmação do fornecedor',
+        status: 'pending' as const
+      },
+      {
+        id: 'step4',
+        label: 'Pagamento confirmado',
+        status: 'pending' as const
+      },
+      {
+        id: 'step5',
+        label: 'Carta da acomodação enviada',
+        status: 'pending' as const
       }
     ]
   };
@@ -188,325 +220,337 @@ const ClientArea = () => {
           ) : (
             <div>
               {/* Cliente Logado */}
-              <div className="mb-8 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={userMock.profileImage} alt={userMock.name} />
-                    <AvatarFallback>{userMock.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h1 className="text-2xl font-bold text-neutrals-dark dark:text-white">
-                      Olá, {userMock.name.split(' ')[0]}!
-                    </h1>
-                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm ${getStatusDisplay(userMock.reservationStatus).color}`}>
-                      {getStatusDisplay(userMock.reservationStatus).icon}
-                      <span>Reserva {getStatusDisplay(userMock.reservationStatus).label}</span>
+              <div className="mb-8">
+                <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-6 mb-8">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={userMock.profileImage} alt={userMock.name} />
+                        <AvatarFallback>{userMock.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h1 className="text-2xl font-bold text-neutrals-dark dark:text-white">
+                          Olá, {userMock.name.split(' ')[0]}!
+                        </h1>
+                        <p className="text-teal-700 dark:text-teal-300 mt-1">
+                          Seja muito bem-vindo(a) à sua área do estudante! Aqui você pode acompanhar todos os detalhes da sua reserva.
+                        </p>
+                      </div>
                     </div>
+                    <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
+                      <LogOut className="h-4 w-4" />
+                      <span>Sair</span>
+                    </Button>
                   </div>
                 </div>
-                <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
-                  <LogOut className="h-4 w-4" />
-                  <span>Sair</span>
-                </Button>
-              </div>
 
-              <Tabs defaultValue="dashboard" className="mb-8">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                  <TabsTrigger value="documents">Documentos</TabsTrigger>
-                  <TabsTrigger value="messages">Mensagens</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="dashboard">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <Card className="col-span-1 lg:col-span-2">
+                <Tabs defaultValue="dashboard" className="mb-8">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                    <TabsTrigger value="documents">Documentos</TabsTrigger>
+                    <TabsTrigger value="messages">Mensagens</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="dashboard">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <Card className="col-span-1 lg:col-span-2">
+                        <CardHeader>
+                          <CardTitle>Minha Acomodação</CardTitle>
+                          <CardDescription>Detalhes completos da sua estadia</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-col md:flex-row gap-6">
+                            <div className="w-full md:w-1/3">
+                              <img 
+                                src={userMock.accommodation.image} 
+                                alt={userMock.accommodation.name} 
+                                className="rounded-lg object-cover aspect-square w-full"
+                              />
+                            </div>
+                            <div className="w-full md:w-2/3 space-y-4">
+                              <div>
+                                <h3 className="text-lg font-semibold">{userMock.accommodation.name}</h3>
+                                <p className="text-muted-foreground">{userMock.accommodation.provider}</p>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <p className="text-sm text-muted-foreground">Cidade / Bairro</p>
+                                    <p className="font-medium">{userMock.accommodation.city} / {userMock.accommodation.neighborhood}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Bed className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <p className="text-sm text-muted-foreground">Tipo de quarto</p>
+                                    <p className="font-medium">{userMock.accommodation.roomType}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Bath className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <p className="text-sm text-muted-foreground">Tipo de banheiro</p>
+                                    <p className="font-medium">{userMock.accommodation.bathroomType}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Users className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <p className="text-sm text-muted-foreground">Divisão por gênero</p>
+                                    <p className="font-medium">{userMock.accommodation.gender}</p>
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Check-in</p>
+                                  <p className="font-medium">{formatDate(userMock.accommodation.checkIn)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Check-out</p>
+                                  <p className="font-medium">{formatDate(userMock.accommodation.checkOut)}</p>
+                                </div>
+                              </div>
+                              
+                              <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm ${getStatusDisplay(userMock.reservationStatus).color}`}>
+                                {getStatusDisplay(userMock.reservationStatus).icon}
+                                <span>Reserva {getStatusDisplay(userMock.reservationStatus).label}</span>
+                              </div>
+                              
+                              <Button variant="outline" className="flex items-center gap-2">
+                                <ArrowRight className="h-4 w-4" />
+                                <span>Ver detalhes completos</span>
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Status dos Documentos</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span>Passaporte</span>
+                            </div>
+                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.passport.status).color}`}>
+                              {getDocumentStatusDisplay(userMock.documents.passport.status).icon}
+                              <span>{getDocumentStatusDisplay(userMock.documents.passport.status).label}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span>Carta de Matrícula</span>
+                            </div>
+                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).color}`}>
+                              {getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).icon}
+                              <span>{getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).label}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span>Comprovante de Pagamento</span>
+                            </div>
+                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.paymentProof.status).color}`}>
+                              {getDocumentStatusDisplay(userMock.documents.paymentProof.status).icon}
+                              <span>{getDocumentStatusDisplay(userMock.documents.paymentProof.status).label}</span>
+                            </div>
+                          </div>
+
+                          <div className="pt-4">
+                            <Button variant="outline" className="w-full flex items-center gap-2">
+                              <Upload className="h-4 w-4" />
+                              <span>Gerenciar documentos</span>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                      <Card className="col-span-1 lg:col-span-2">
+                        <CardHeader>
+                          <CardTitle>Mensagens Recentes</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {userMock.messages.map((message) => (
+                            <div key={message.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
+                              <div className="flex justify-between items-start mb-2">
+                                <div className="font-medium">
+                                  {message.sender === 'system' ? 'Sistema' : 'Atendente'}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(message.date).toLocaleString('pt-BR')}
+                                </div>
+                              </div>
+                              <p className="text-sm">{message.content}</p>
+                            </div>
+                          ))}
+                          
+                          <Button className="w-full flex items-center gap-2 mt-2">
+                            <MessageCircle className="h-4 w-4" />
+                            <span>Enviar Mensagem</span>
+                          </Button>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Progresso da Reserva</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ReservationProgressBar steps={userMock.progressSteps} />
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="documents">
+                    <Card>
                       <CardHeader>
-                        <CardTitle>Sua Reserva</CardTitle>
-                        <CardDescription>Detalhes da sua acomodação</CardDescription>
+                        <CardTitle>Documentos</CardTitle>
+                        <CardDescription>Gerencie os documentos da sua reserva</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="flex flex-col md:flex-row gap-6">
-                          <div className="w-full md:w-1/3">
-                            <img 
-                              src={userMock.accommodation.image} 
-                              alt={userMock.accommodation.name} 
-                              className="rounded-lg object-cover aspect-square w-full"
-                            />
+                        <div className="space-y-6">
+                          <div className="p-4 border border-border rounded-lg">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div>
+                                <h3 className="font-medium">Passaporte</h3>
+                                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                  <span>{userMock.documents.passport.filename}</span>
+                                  <span>•</span>
+                                  <span>Enviado em {formatDate(userMock.documents.passport.uploaded)}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.passport.status).color}`}>
+                                  {getDocumentStatusDisplay(userMock.documents.passport.status).icon}
+                                  <span>{getDocumentStatusDisplay(userMock.documents.passport.status).label}</span>
+                                </div>
+                                <Button variant="outline" size="sm">
+                                  <Upload className="h-4 w-4" />
+                                  <span className="ml-2">Atualizar</span>
+                                </Button>
+                              </div>
+                            </div>
                           </div>
-                          <div className="w-full md:w-2/3 space-y-4">
-                            <div>
-                              <h3 className="text-lg font-semibold">{userMock.accommodation.name}</h3>
-                              <p className="text-muted-foreground">{userMock.accommodation.city}</p>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-4">
+
+                          <div className="p-4 border border-border rounded-lg">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                               <div>
-                                <p className="text-sm text-muted-foreground">Check-in</p>
-                                <p className="font-medium">{formatDate(userMock.accommodation.checkIn)}</p>
+                                <h3 className="font-medium">Carta de Matrícula</h3>
+                                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                  <span>{userMock.documents.enrollmentLetter.filename}</span>
+                                  <span>•</span>
+                                  <span>Enviado em {formatDate(userMock.documents.enrollmentLetter.uploaded)}</span>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Check-out</p>
-                                <p className="font-medium">{formatDate(userMock.accommodation.checkOut)}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Tipo de quarto</p>
-                                <p className="font-medium">
-                                  {userMock.accommodation.roomType === 'individual' ? 'Quarto Individual' : 
-                                   userMock.accommodation.roomType === 'shared' ? 'Quarto Compartilhado' : 'Quarto de Casal'}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Duração</p>
-                                <p className="font-medium">6 meses</p>
+                              <div className="flex items-center gap-2">
+                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).color}`}>
+                                  {getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).icon}
+                                  <span>{getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).label}</span>
+                                </div>
+                                <Button variant="outline" size="sm">
+                                  <Upload className="h-4 w-4" />
+                                  <span className="ml-2">Atualizar</span>
+                                </Button>
                               </div>
                             </div>
+                          </div>
+
+                          <div className="p-4 border border-border rounded-lg">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div>
+                                <h3 className="font-medium">Comprovante de Pagamento</h3>
+                                <div className="text-sm text-muted-foreground">
+                                  {userMock.documents.paymentProof.status === 'not_uploaded' ? (
+                                    <span>Nenhum arquivo enviado</span>
+                                  ) : (
+                                    <>
+                                      <span>{userMock.documents.paymentProof.filename}</span>
+                                      <span>•</span>
+                                      <span>Enviado em {formatDate(userMock.documents.paymentProof.uploaded)}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.paymentProof.status).color}`}>
+                                  {getDocumentStatusDisplay(userMock.documents.paymentProof.status).icon}
+                                  <span>{getDocumentStatusDisplay(userMock.documents.paymentProof.status).label}</span>
+                                </div>
+                                <Button variant="outline" size="sm">
+                                  <Upload className="h-4 w-4" />
+                                  <span className="ml-2">{userMock.documents.paymentProof.status === 'not_uploaded' ? 'Enviar' : 'Atualizar'}</span>
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="messages">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Mensagens</CardTitle>
+                        <CardDescription>Comunicação com nossa equipe</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {userMock.messages.map((message) => (
+                            <div key={message.id} className="p-4 border border-border rounded-lg">
+                              <div className="flex justify-between items-start mb-2">
+                                <div className="font-medium">
+                                  {message.sender === 'system' ? 'Sistema' : 'Atendente'}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(message.date).toLocaleString('pt-BR')}
+                                </div>
+                              </div>
+                              <p className="text-sm">{message.content}</p>
+                            </div>
+                          ))}
+                          
+                          <div className="pt-4">
+                            <div className="mb-4">
+                              <Label htmlFor="message">Nova mensagem</Label>
+                              <div className="mt-2">
+                                <textarea
+                                  id="message"
+                                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  placeholder="Escreva sua mensagem..."
+                                ></textarea>
+                              </div>
+                            </div>
                             
-                            <Button variant="outline" className="flex items-center gap-2">
-                              <ArrowRight className="h-4 w-4" />
-                              <span>Ver detalhes completos</span>
+                            <Button className="w-full flex items-center gap-2">
+                              <MessageCircle className="h-4 w-4" />
+                              <span>Enviar Mensagem</span>
                             </Button>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Status da Documentação</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span>Passaporte</span>
-                          </div>
-                          <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.passport.status).color}`}>
-                            {getDocumentStatusDisplay(userMock.documents.passport.status).icon}
-                            <span>{getDocumentStatusDisplay(userMock.documents.passport.status).label}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span>Carta de Matrícula</span>
-                          </div>
-                          <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).color}`}>
-                            {getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).icon}
-                            <span>{getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).label}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span>Comprovante de Pagamento</span>
-                          </div>
-                          <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.paymentProof.status).color}`}>
-                            {getDocumentStatusDisplay(userMock.documents.paymentProof.status).icon}
-                            <span>{getDocumentStatusDisplay(userMock.documents.paymentProof.status).label}</span>
-                          </div>
-                        </div>
-
-                        <div className="pt-4">
-                          <Button variant="outline" className="w-full flex items-center gap-2">
-                            <Upload className="h-4 w-4" />
-                            <span>Gerenciar documentos</span>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                    <Card className="col-span-1 lg:col-span-2">
-                      <CardHeader>
-                        <CardTitle>Mensagens Recentes</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {userMock.messages.map((message) => (
-                          <div key={message.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="font-medium">
-                                {message.sender === 'system' ? 'Sistema' : 'Atendente'}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {new Date(message.date).toLocaleString('pt-BR')}
-                              </div>
-                            </div>
-                            <p className="text-sm">{message.content}</p>
-                          </div>
-                        ))}
-                        
-                        <Button className="w-full flex items-center gap-2 mt-2">
-                          <MessageCircle className="h-4 w-4" />
-                          <span>Enviar Mensagem</span>
-                        </Button>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Links Úteis</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <Button variant="outline" className="w-full flex items-center gap-2 justify-start">
-                          <User className="h-4 w-4" />
-                          <span>Editar Dados Pessoais</span>
-                        </Button>
-                        
-                        <Button variant="outline" className="w-full flex items-center gap-2 justify-start">
-                          <MessageCircle className="h-4 w-4" />
-                          <span>Falar com Atendente</span>
-                        </Button>
-                        
-                        <Button variant="outline" className="w-full flex items-center gap-2 justify-start">
-                          <Download className="h-4 w-4" />
-                          <span>Baixar Informações</span>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="documents">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Documentos</CardTitle>
-                      <CardDescription>Gerencie os documentos da sua reserva</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-6">
-                        <div className="p-4 border border-border rounded-lg">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                              <h3 className="font-medium">Passaporte</h3>
-                              <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                <span>{userMock.documents.passport.filename}</span>
-                                <span>•</span>
-                                <span>Enviado em {formatDate(userMock.documents.passport.uploaded)}</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.passport.status).color}`}>
-                                {getDocumentStatusDisplay(userMock.documents.passport.status).icon}
-                                <span>{getDocumentStatusDisplay(userMock.documents.passport.status).label}</span>
-                              </div>
-                              <Button variant="outline" size="sm">
-                                <Upload className="h-4 w-4" />
-                                <span className="ml-2">Atualizar</span>
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-4 border border-border rounded-lg">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                              <h3 className="font-medium">Carta de Matrícula</h3>
-                              <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                <span>{userMock.documents.enrollmentLetter.filename}</span>
-                                <span>•</span>
-                                <span>Enviado em {formatDate(userMock.documents.enrollmentLetter.uploaded)}</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).color}`}>
-                                {getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).icon}
-                                <span>{getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).label}</span>
-                              </div>
-                              <Button variant="outline" size="sm">
-                                <Upload className="h-4 w-4" />
-                                <span className="ml-2">Atualizar</span>
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-4 border border-border rounded-lg">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                              <h3 className="font-medium">Comprovante de Pagamento</h3>
-                              <div className="text-sm text-muted-foreground">
-                                {userMock.documents.paymentProof.status === 'not_uploaded' ? (
-                                  <span>Nenhum arquivo enviado</span>
-                                ) : (
-                                  <>
-                                    <span>{userMock.documents.paymentProof.filename}</span>
-                                    <span>•</span>
-                                    <span>Enviado em {formatDate(userMock.documents.paymentProof.uploaded)}</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.paymentProof.status).color}`}>
-                                {getDocumentStatusDisplay(userMock.documents.paymentProof.status).icon}
-                                <span>{getDocumentStatusDisplay(userMock.documents.paymentProof.status).label}</span>
-                              </div>
-                              <Button variant="outline" size="sm">
-                                <Upload className="h-4 w-4" />
-                                <span className="ml-2">{userMock.documents.paymentProof.status === 'not_uploaded' ? 'Enviar' : 'Atualizar'}</span>
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="messages">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Mensagens</CardTitle>
-                      <CardDescription>Comunicação com nossa equipe</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {userMock.messages.map((message) => (
-                          <div key={message.id} className="p-4 border border-border rounded-lg">
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="font-medium">
-                                {message.sender === 'system' ? 'Sistema' : 'Atendente'}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {new Date(message.date).toLocaleString('pt-BR')}
-                              </div>
-                            </div>
-                            <p className="text-sm">{message.content}</p>
-                          </div>
-                        ))}
-                        
-                        <div className="pt-4">
-                          <div className="mb-4">
-                            <Label htmlFor="message">Nova mensagem</Label>
-                            <div className="mt-2">
-                              <textarea
-                                id="message"
-                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                placeholder="Escreva sua mensagem..."
-                              ></textarea>
-                            </div>
-                          </div>
-                          
-                          <Button className="w-full flex items-center gap-2">
-                            <MessageCircle className="h-4 w-4" />
-                            <span>Enviar Mensagem</span>
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
           )}
         </div>
       </main>
       
       <Footer />
-      <WhatsAppButton phoneNumber="353000000000" showOptions={true} />
+      <WhatsAppButton phoneNumber="5521970286372" showOptions={true} />
     </div>
   );
 };
