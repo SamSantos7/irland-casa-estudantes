@@ -77,11 +77,11 @@ const FaqSection = () => {
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 text-neutrals-dark dark:text-white">
+      <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-8 text-neutrals-dark dark:text-white">
         Perguntas Frequentes
       </h2>
       
-      <div className="flex flex-wrap gap-2 justify-center mb-6">
+      <div className="flex flex-wrap gap-3 justify-center mb-8">
         <button
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
             activeCategory === null
@@ -107,27 +107,27 @@ const FaqSection = () => {
         ))}
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-6">
         {filteredItems.map((item, index) => (
           <div
             key={index}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
           >
             <button
-              className="flex justify-between items-center w-full p-4 text-left bg-white dark:bg-neutrals-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="flex justify-between items-center w-full p-5 text-left bg-white dark:bg-neutrals-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               onClick={() => toggleItem(index)}
             >
-              <span className="font-medium text-neutrals-dark dark:text-white">
+              <span className="font-semibold text-lg text-neutrals-dark dark:text-white">
                 {item.question}
               </span>
               {activeIndex === index ? (
-                <ChevronUp className="text-teal dark:text-teal-light" />
+                <ChevronUp className="text-teal dark:text-teal-light flex-shrink-0 ml-2" />
               ) : (
-                <ChevronDown className="text-teal dark:text-teal-light" />
+                <ChevronDown className="text-teal dark:text-teal-light flex-shrink-0 ml-2" />
               )}
             </button>
             {activeIndex === index && (
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 text-neutrals-dark dark:text-white">
+              <div className="p-5 bg-gray-50 dark:bg-gray-800 text-neutrals-dark dark:text-white leading-relaxed">
                 {item.answer}
               </div>
             )}

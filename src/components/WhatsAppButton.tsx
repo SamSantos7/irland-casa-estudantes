@@ -75,10 +75,10 @@ const WhatsAppButton = ({
         aria-label="Contatar pelo WhatsApp"
       >
         <MessageCircle size={28} />
-        {fixed && window.innerWidth <= 768 && <span className="hidden md:inline-block ml-2">Fale com um consultor</span>}
+        <span className="hidden md:inline-block ml-2">Fale com um consultor</span>
       </button>
 
-      {fixed && window.innerWidth <= 768 && (
+      {fixed && (
         <div className="fixed bottom-0 left-0 right-0 bg-teal text-white py-3 z-30 text-center shadow-lg md:hidden">
           <Link
             to="/reservation-form"
