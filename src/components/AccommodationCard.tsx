@@ -1,6 +1,5 @@
-
 import { Link } from "react-router-dom";
-import { Euro, Home, MapPin, Calendar, Users, Shower } from "lucide-react";
+import { Euro, Home, MapPin, Calendar, Users, Bath } from "lucide-react";
 
 export type RoomType = "individual" | "shared" | "double";
 export type BathroomType = "private" | "shared";
@@ -36,7 +35,6 @@ const AccommodationCard = ({
   bathroomShared = 2,
   genderDivision = "same",
 }: AccommodationCardProps) => {
-  // Função para traduzir o tipo de quarto
   const translateRoomType = (type: RoomType) => {
     switch (type) {
       case "individual":
@@ -50,7 +48,6 @@ const AccommodationCard = ({
     }
   };
 
-  // Função para traduzir o tipo de banheiro
   const translateBathroomType = (type: BathroomType, shared?: number) => {
     if (type === "private") {
       return "Banheiro Privativo";
@@ -58,12 +55,10 @@ const AccommodationCard = ({
     return `Banheiro Compartilhado (${shared} pessoas)`;
   };
 
-  // Função para traduzir a divisão por gênero
   const translateGenderDivision = (type: GenderDivision) => {
     return type === "same" ? "Mesmo Sexo" : "Misto";
   };
 
-  // Configurações para o badge de disponibilidade
   const availabilityConfig = {
     normal: {
       show: true,
@@ -123,7 +118,7 @@ const AccommodationCard = ({
             <span>{translateRoomType(roomType)}</span>
           </div>
           <div className="flex items-center text-muted-foreground text-sm">
-            <Shower size={14} className="mr-2 text-teal dark:text-teal-light" />
+            <Bath size={14} className="mr-2 text-teal dark:text-teal-light" />
             <span>{translateBathroomType(bathroomType, bathroomShared)}</span>
           </div>
           <div className="flex items-center text-muted-foreground text-sm">
