@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./hooks/use-theme";
 import { HelmetProvider } from "react-helmet-async";
-import { StrictMode } from "react";
+import React, { StrictMode } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Accommodations from "./pages/Accommodations";
@@ -19,12 +19,12 @@ import ClientArea from "./pages/ClientArea";
 import RefundPolicy from "./pages/RefundPolicy";
 import Terms from "./pages/Terms";
 
-// Criar uma nova instância do QueryClient fora do componente
+// Create a new QueryClient instance
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <StrictMode>
+    <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="light">
           <HelmetProvider>
@@ -51,7 +51,7 @@ const App = () => {
           </HelmetProvider>
         </ThemeProvider>
       </QueryClientProvider>
-    </StrictMode>
+    </React.StrictMode>
   );
 };
 
