@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -22,6 +21,8 @@ const featuredAccommodations = [
     pricePerWeek: 250,
     imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "limited" as "normal" | "limited" | "last_units",
+    neighborhood: "Centro",
+    minWeeks: 4
   },
   {
     id: 2,
@@ -31,6 +32,8 @@ const featuredAccommodations = [
     pricePerWeek: 180,
     imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "normal" as "normal" | "limited" | "last_units",
+    neighborhood: "Universitário",
+    minWeeks: 8
   },
   {
     id: 3,
@@ -40,6 +43,8 @@ const featuredAccommodations = [
     pricePerWeek: 320,
     imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "last_units" as "normal" | "limited" | "last_units",
+    neighborhood: "Salthill",
+    minWeeks: 6
   },
   {
     id: 4,
@@ -49,6 +54,8 @@ const featuredAccommodations = [
     pricePerWeek: 230,
     imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "normal" as "normal" | "limited" | "last_units",
+    neighborhood: "Centro Histórico",
+    minWeeks: 4
   },
 ];
 
@@ -84,6 +91,7 @@ const Index = () => {
         title="Acomodações estudantis na Irlanda | Irlanda Casa Estudantes"
         description="Encontre acomodação estudantil ideal na Irlanda com suporte em português. Residências em Dublin, Cork, Galway e Limerick para seu intercâmbio."
         canonical="/"
+        altText="Paisagem verde da Irlanda com acomodações estudantis"
       />
       <Navbar />
 
@@ -134,13 +142,20 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <HowItWorks />
+      <section className="py-16 bg-white dark:bg-neutrals-dark">
+        <div className="container">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-neutrals-dark dark:text-white">
+            Como Funciona
+          </h2>
+          <HowItWorks />
+        </div>
+      </section>
 
       {/* Featured Accommodations */}
       <section className="py-16 bg-neutrals-light dark:bg-neutrals-dark">
         <div className="container">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-neutrals-dark dark:text-white">
+          <div className="flex justify-between items-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-neutrals-dark dark:text-white">
               Acomodações em Destaque
             </h2>
             <Link
@@ -162,6 +177,8 @@ const Index = () => {
                 pricePerWeek={accommodation.pricePerWeek}
                 imageUrl={accommodation.imageUrl}
                 availabilityStatus={accommodation.availabilityStatus}
+                neighborhood={accommodation.neighborhood}
+                minWeeks={accommodation.minWeeks}
               />
             ))}
           </div>
@@ -217,7 +234,7 @@ const Index = () => {
       {/* Testimonials */}
       <section className="py-16">
         <div className="container">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-neutrals-dark dark:text-white">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-neutrals-dark dark:text-white">
             O que Nossos Clientes Dizem
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -225,36 +242,65 @@ const Index = () => {
               <TestimonialCard key={index} {...testimonial} />
             ))}
           </div>
+          
+          {/* Avaliações de Confiança */}
+          <div className="mt-12 flex flex-col items-center">
+            <p className="text-lg font-medium mb-4 text-center">
+              Veja nossas avaliações em plataformas de confiança:
+            </p>
+            <div className="flex flex-wrap justify-center gap-6 items-center">
+              <a 
+                href="https://www.google.com/maps" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center bg-white dark:bg-neutrals-dark px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              >
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/2048px-Google_%22G%22_Logo.svg.png" 
+                  alt="Google Reviews" 
+                  className="h-6 w-6 mr-2" 
+                />
+                <div className="flex flex-col">
+                  <span className="font-medium text-sm">Google Reviews</span>
+                  <span className="text-xs text-yellow-500">★★★★★ 4.9/5</span>
+                </div>
+              </a>
+              <a 
+                href="https://www.trustpilot.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center bg-white dark:bg-neutrals-dark px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              >
+                <img 
+                  src="https://cdn.trustpilot.net/brand-assets/1.1.0/favicons/apple-touch-icon-152x152.png" 
+                  alt="Trustpilot" 
+                  className="h-6 w-6 mr-2" 
+                />
+                <div className="flex flex-col">
+                  <span className="font-medium text-sm">Trustpilot</span>
+                  <span className="text-xs text-green-500">★★★★★ 4.8/5</span>
+                </div>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* FAQ Section */}
       <section className="py-16 bg-neutrals-light dark:bg-neutrals-dark">
         <div className="container">
-          <FaqSection />
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-teal dark:bg-teal text-white">
-        <div className="container text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Pronto para encontrar sua acomodação ideal?
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 text-neutrals-dark dark:text-white">
+            Dúvidas Frequentes
           </h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto">
-            Entre em contato conosco agora mesmo ou faça sua reserva diretamente.
-            Nossa equipe está pronta para te ajudar!
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/reservation-form"
-              className="bg-white text-teal px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition btn-hover-effect"
-            >
-              Fazer Reserva
-            </Link>
+          <FaqSection />
+          
+          <div className="mt-12 text-center">
+            <p className="mb-6 text-lg text-neutrals-dark dark:text-white">
+              Não encontrou o que procura? Entre em contato conosco!
+            </p>
             <Link
               to="/contact"
-              className="border border-white text-white px-6 py-3 rounded-lg font-medium hover:bg-white hover:bg-opacity-10 transition btn-hover-effect"
+              className="inline-block bg-teal text-white dark:bg-teal-light dark:text-teal px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 dark:hover:bg-opacity-90 transition-transform transform hover:scale-105 shadow-md"
             >
               Fale Conosco
             </Link>
@@ -262,8 +308,45 @@ const Index = () => {
         </div>
       </section>
 
+      {/* CTA Section */}
+      <section className="py-16 bg-teal dark:bg-teal text-white">
+        <div className="container text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Pronto para encontrar sua acomodação ideal?
+          </h2>
+          <p className="text-lg mb-10 max-w-2xl mx-auto">
+            Entre em contato conosco agora mesmo ou faça sua reserva diretamente.
+            Nossa equipe está pronta para te ajudar!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <Link
+              to="/reservation-form"
+              className="bg-white text-teal px-8 py-4 rounded-lg font-medium hover:bg-opacity-90 transition btn-hover-effect text-lg shadow-lg"
+            >
+              Reservar Agora
+            </Link>
+            <Link
+              to="/contact"
+              className="border-2 border-white text-white px-8 py-4 rounded-lg font-medium hover:bg-white hover:bg-opacity-10 transition btn-hover-effect text-lg"
+            >
+              Fale Conosco
+            </Link>
+          </div>
+          
+          <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm">
+            <Link to="/refund-policy" className="text-white/80 hover:text-white hover:underline">
+              Política de Reembolso
+            </Link>
+            <span className="text-white/50">•</span>
+            <Link to="/terms" className="text-white/80 hover:text-white hover:underline">
+              Termos de Reserva
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <Footer />
-      <WhatsAppButton phoneNumber="353000000000" showOptions={true} />
+      <WhatsAppButton phoneNumber="353000000000" showOptions={true} fixed={true} />
     </div>
   );
 };

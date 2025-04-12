@@ -1,12 +1,14 @@
 
 import { MessageCircle } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 interface WhatsAppButtonProps {
   phoneNumber: string;
   message?: string;
   className?: string;
   showOptions?: boolean;
+  fixed?: boolean;
 }
 
 const WhatsAppButton = ({
@@ -14,6 +16,7 @@ const WhatsAppButton = ({
   message = "Olá! Gostaria de mais informações sobre as acomodações estudantis.",
   className = "",
   showOptions = false,
+  fixed = true,
 }: WhatsAppButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -45,6 +48,9 @@ const WhatsAppButton = ({
     }
   ];
 
+  const baseClasses = `bg-[#25D366] text-white rounded-full p-4 shadow-lg hover:bg-[#20BD5C] transition-colors z-40 btn-hover-effect ${className}`;
+  const fixedClasses = fixed ? "fixed bottom-6 right-6" : "";
+
   return (
     <>
       {showOptions && isOpen && (
@@ -65,11 +71,23 @@ const WhatsAppButton = ({
       
       <button
         onClick={() => showOptions ? setIsOpen(!isOpen) : handleClick()}
-        className={`fixed bottom-6 right-6 bg-[#25D366] text-white rounded-full p-4 shadow-lg hover:bg-[#20BD5C] transition-colors z-40 btn-hover-effect ${className}`}
+        className={`${baseClasses} ${fixedClasses}`}
         aria-label="Contatar pelo WhatsApp"
       >
         <MessageCircle size={28} />
+        {fixed && window.innerWidth <= 768 && <span className="hidden md:inline-block ml-2">Fale com um consultor</span>}
       </button>
+
+      {fixed && window.innerWidth <= 768 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-teal text-white py-3 z-30 text-center shadow-lg md:hidden">
+          <Link
+            to="/reservation-form"
+            className="block w-full font-medium"
+          >
+            Reservar acomodação
+          </Link>
+        </div>
+      )}
     </>
   );
 };

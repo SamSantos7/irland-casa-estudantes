@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Euro } from "lucide-react";
+import { Euro, Home, MapPin, Calendar } from "lucide-react";
 
 export type RoomType = "individual" | "shared" | "double";
 
@@ -12,6 +12,8 @@ export interface AccommodationCardProps {
   pricePerWeek: number;
   imageUrl: string;
   availabilityStatus?: "normal" | "limited" | "last_units";
+  neighborhood?: string;
+  minWeeks?: number;
 }
 
 const AccommodationCard = ({
@@ -22,6 +24,8 @@ const AccommodationCard = ({
   pricePerWeek,
   imageUrl,
   availabilityStatus = "normal",
+  neighborhood = "Centro",
+  minWeeks = 4,
 }: AccommodationCardProps) => {
   // Função para traduzir o tipo de quarto
   const translateRoomType = (type: RoomType) => {
@@ -61,12 +65,12 @@ const AccommodationCard = ({
   return (
     <Link
       to={`/accommodations/${id}`}
-      className="block group bg-white dark:bg-neutrals-dark rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-2 hover:shadow-xl transition-all duration-300 card-shadow"
+      className="block group bg-white dark:bg-neutrals-dark rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-3 hover:shadow-xl transition-all duration-300 card-shadow"
     >
       <div className="relative">
         <img
           src={imageUrl}
-          alt={name}
+          alt={`${translateRoomType(roomType)} em ${city} - ${name}`}
           className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute top-3 left-3 bg-white dark:bg-teal px-3 py-1 rounded-full text-xs font-semibold text-teal dark:text-white">
@@ -86,9 +90,20 @@ const AccommodationCard = ({
         <h3 className="text-lg font-semibold text-neutrals-dark dark:text-white mb-1">
           {name}
         </h3>
-        <p className="text-muted-foreground text-sm mb-2">
-          {translateRoomType(roomType)}
-        </p>
+        <div className="flex flex-col gap-2 mb-3">
+          <div className="flex items-center text-muted-foreground text-sm">
+            <Home size={14} className="mr-2 text-teal dark:text-teal-light" />
+            <span>{translateRoomType(roomType)}</span>
+          </div>
+          <div className="flex items-center text-muted-foreground text-sm">
+            <MapPin size={14} className="mr-2 text-teal dark:text-teal-light" />
+            <span>{neighborhood}</span>
+          </div>
+          <div className="flex items-center text-muted-foreground text-sm">
+            <Calendar size={14} className="mr-2 text-teal dark:text-teal-light" />
+            <span>Mínimo {minWeeks} semanas</span>
+          </div>
+        </div>
         <div className="flex justify-between items-center">
           <span className="text-sm text-teal dark:text-teal-light font-medium">
             Ver detalhes

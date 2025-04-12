@@ -19,6 +19,8 @@ const accommodationsData = [
     pricePerWeek: 250,
     imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "limited" as "normal" | "limited" | "last_units",
+    neighborhood: "Centro",
+    minWeeks: 4
   },
   {
     id: 2,
@@ -28,6 +30,8 @@ const accommodationsData = [
     pricePerWeek: 180,
     imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "normal" as "normal" | "limited" | "last_units",
+    neighborhood: "Universitário",
+    minWeeks: 8
   },
   {
     id: 3,
@@ -37,6 +41,8 @@ const accommodationsData = [
     pricePerWeek: 320,
     imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "last_units" as "normal" | "limited" | "last_units",
+    neighborhood: "Costa",
+    minWeeks: 6
   },
   {
     id: 4,
@@ -46,6 +52,8 @@ const accommodationsData = [
     pricePerWeek: 220,
     imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "normal" as "normal" | "limited" | "last_units",
+    neighborhood: "Centro",
+    minWeeks: 4
   },
   {
     id: 5,
@@ -55,6 +63,8 @@ const accommodationsData = [
     pricePerWeek: 170,
     imageUrl: "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "limited" as "normal" | "limited" | "last_units",
+    neighborhood: "Sul",
+    minWeeks: 12
   },
   {
     id: 6,
@@ -64,6 +74,8 @@ const accommodationsData = [
     pricePerWeek: 240,
     imageUrl: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "last_units" as "normal" | "limited" | "last_units",
+    neighborhood: "Campus",
+    minWeeks: 16
   },
   {
     id: 7,
@@ -73,6 +85,8 @@ const accommodationsData = [
     pricePerWeek: 300,
     imageUrl: "https://images.unsplash.com/photo-1499916078039-922301b0eb9b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "normal" as "normal" | "limited" | "last_units",
+    neighborhood: "Salthill",
+    minWeeks: 4
   },
   {
     id: 8,
@@ -82,6 +96,8 @@ const accommodationsData = [
     pricePerWeek: 210,
     imageUrl: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "limited" as "normal" | "limited" | "last_units",
+    neighborhood: "Centro Histórico",
+    minWeeks: 8
   },
   {
     id: 9,
@@ -91,6 +107,8 @@ const accommodationsData = [
     pricePerWeek: 160,
     imageUrl: "https://images.unsplash.com/photo-1559599238-3d0d41863f8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDF8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
     availabilityStatus: "normal" as "normal" | "limited" | "last_units",
+    neighborhood: "Campus",
+    minWeeks: 12
   },
 ];
 
@@ -224,25 +242,27 @@ const Accommodations = () => {
       <SEO 
         title="Acomodações Estudantis na Irlanda | Irlanda Casa Estudantes"
         description="Encontre acomodações estudantis em Dublin, Cork, Galway e Limerick. Opções de quartos individuais, compartilhados e casais com suporte em português."
+        canonical="/accommodations"
+        altText="Quartos estudantis na Irlanda - vista de acomodações disponíveis"
       />
       <Navbar />
 
       <main className="flex-grow pt-24">
         <section className="bg-teal dark:bg-teal py-12">
           <div className="container">
-            <h1 className="text-3xl font-bold text-white">Acomodações Estudantis</h1>
-            <p className="text-white/80 mt-2">
+            <h1 className="text-3xl md:text-4xl font-bold text-white">Acomodações Estudantis</h1>
+            <p className="text-white/80 mt-2 text-lg">
               Encontre o lugar perfeito para sua estadia na Irlanda
             </p>
           </div>
         </section>
 
-        <section className="py-8">
+        <section className="py-10">
           <div className="container">
             <div className="flex flex-col lg:flex-row gap-8">
               <button
                 onClick={toggleFiltersView}
-                className="lg:hidden flex items-center justify-center gap-2 w-full py-2 border border-gray-300 dark:border-gray-700 rounded-lg mb-4"
+                className="lg:hidden flex items-center justify-center gap-2 w-full py-3 border border-gray-300 dark:border-gray-700 rounded-lg mb-4 bg-white dark:bg-neutrals-dark shadow-sm"
               >
                 <Filter size={20} />
                 <span>{showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}</span>
@@ -253,8 +273,8 @@ const Accommodations = () => {
                   showFilters ? "block" : "hidden"
                 } lg:block bg-white dark:bg-neutrals-dark p-6 rounded-2xl shadow-md mb-6 lg:mb-0 h-fit`}
               >
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-2xl font-bold text-neutrals-dark dark:text-white">
                     Filtros
                   </h2>
                   <button
@@ -265,11 +285,11 @@ const Accommodations = () => {
                   </button>
                 </div>
 
-                <div className="mb-6">
-                  <h3 className="text-lg font-medium mb-3 text-neutrals-dark dark:text-white">
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold mb-4 text-neutrals-dark dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
                     Cidade
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {cities.map((city) => (
                       <label
                         key={city.value}
@@ -295,11 +315,11 @@ const Accommodations = () => {
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <h3 className="text-lg font-medium mb-3 text-neutrals-dark dark:text-white">
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold mb-4 text-neutrals-dark dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
                     Tipo de Quarto
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {roomTypes.map((type) => (
                       <label
                         key={type.value}
@@ -325,11 +345,11 @@ const Accommodations = () => {
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <h3 className="text-lg font-medium mb-3 text-neutrals-dark dark:text-white">
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold mb-4 text-neutrals-dark dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
                     Faixa de Preço
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {priceRanges.map((range) => (
                       <label
                         key={range.value}
@@ -356,13 +376,13 @@ const Accommodations = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium mb-3 text-neutrals-dark dark:text-white">
+                  <h3 className="text-lg font-semibold mb-4 text-neutrals-dark dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
                     Disponibilidade
                   </h3>
                   <select
                     value={selectedAvailability}
                     onChange={(e) => handleAvailabilityChange(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:ring-2 focus:ring-teal focus:border-teal dark:focus:ring-teal-light dark:focus:border-teal-light transition-all"
                   >
                     {availabilityOptions.map(option => (
                       <option key={option.value} value={option.value}>
@@ -374,13 +394,16 @@ const Accommodations = () => {
               </div>
 
               <div className="w-full lg:w-3/4">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white">
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-neutrals-dark dark:text-white mb-2">
                     {filteredAccommodations.length} acomodações encontradas
                   </h2>
+                  <p className="text-muted-foreground">
+                    Encontre o lugar ideal para sua estadia na Irlanda
+                  </p>
                 </div>
                 {filteredAccommodations.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredAccommodations.map((accommodation) => (
                       <AccommodationCard 
                         key={accommodation.id}
@@ -391,20 +414,33 @@ const Accommodations = () => {
                         pricePerWeek={accommodation.pricePerWeek}
                         imageUrl={accommodation.imageUrl}
                         availabilityStatus={accommodation.availabilityStatus}
+                        neighborhood={accommodation.neighborhood}
+                        minWeeks={accommodation.minWeeks}
                       />
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white dark:bg-neutrals-dark p-6 rounded-2xl text-center">
-                    <p className="text-lg text-neutrals-dark dark:text-white">
+                  <div className="bg-white dark:bg-neutrals-dark p-8 rounded-2xl text-center shadow-md">
+                    <p className="text-lg text-neutrals-dark dark:text-white mb-4">
                       Nenhuma acomodação encontrada com os filtros selecionados.
                     </p>
                     <button
                       onClick={clearFilters}
-                      className="mt-4 text-teal dark:text-teal-light hover:underline"
+                      className="px-6 py-3 bg-teal dark:bg-teal-light text-white dark:text-teal rounded-lg hover:opacity-90 transition-opacity"
                     >
                       Limpar filtros
                     </button>
+                  </div>
+                )}
+                
+                {filteredAccommodations.length > 0 && (
+                  <div className="mt-12 flex justify-center">
+                    <Link
+                      to="/reservation-form"
+                      className="bg-teal text-white dark:bg-teal-light dark:text-teal px-8 py-4 rounded-lg font-medium hover:bg-opacity-90 dark:hover:bg-opacity-90 transition btn-hover-effect text-lg shadow-md"
+                    >
+                      Reservar Agora
+                    </Link>
                   </div>
                 )}
               </div>
@@ -414,7 +450,7 @@ const Accommodations = () => {
       </main>
 
       <Footer />
-      <WhatsAppButton phoneNumber="353000000000" />
+      <WhatsAppButton phoneNumber="353000000000" fixed={true} />
     </div>
   );
 };
