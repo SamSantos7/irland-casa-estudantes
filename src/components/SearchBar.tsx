@@ -1,7 +1,8 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Home, Search } from "lucide-react";
+import { Home, Search } from "lucide-react";
+import { WeekendDatepicker } from "./WeekendDatepicker";
 
 const cities = [
   { value: "dublin", label: "Dublin" },
@@ -19,8 +20,8 @@ const roomTypes = [
 const SearchBar = () => {
   const navigate = useNavigate();
   const [city, setCity] = useState("");
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
+  const [checkInDate, setCheckInDate] = useState<Date | undefined>(undefined);
+  const [checkOutDate, setCheckOutDate] = useState<Date | undefined>(undefined);
   const [roomType, setRoomType] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,36 +29,11 @@ const SearchBar = () => {
     const params = new URLSearchParams();
     
     if (city) params.append("city", city);
-    if (checkIn) params.append("checkIn", checkIn);
-    if (checkOut) params.append("checkOut", checkOut);
+    if (checkInDate) params.append("checkIn", checkInDate.toISOString().split('T')[0]);
+    if (checkOutDate) params.append("checkOut", checkOutDate.toISOString().split('T')[0]);
     if (roomType) params.append("roomType", roomType);
 
     navigate(`/accommodations?${params.toString()}`);
-  };
-
-  // Function to check if a date is a Saturday or Sunday
-  const isWeekendDay = (dateString: string): boolean => {
-    if (!dateString) return false;
-    const date = new Date(dateString);
-    const day = date.getDay();
-    // 0 is Sunday, 6 is Saturday
-    return day === 0 || day === 6;
-  };
-
-  // Handle date changes and validate weekend only
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>, dateType: 'checkIn' | 'checkOut') => {
-    const selectedDate = e.target.value;
-    
-    if (selectedDate && !isWeekendDay(selectedDate)) {
-      alert("Por favor, selecione apenas datas de sábado ou domingo para check-in e check-out.");
-      return;
-    }
-    
-    if (dateType === 'checkIn') {
-      setCheckIn(selectedDate);
-    } else {
-      setCheckOut(selectedDate);
-    }
   };
 
   return (
@@ -85,37 +61,19 @@ const SearchBar = () => {
           </div>
         </div>
 
-        <div>
-          <label htmlFor="checkIn" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-            Check-in (Sáb/Dom)
-          </label>
-          <div className="relative">
-            <input
-              type="date"
-              id="checkIn"
-              value={checkIn}
-              onChange={(e) => handleDateChange(e, 'checkIn')}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-            />
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-teal dark:text-teal-light" size={18} />
-          </div>
-        </div>
+        <WeekendDatepicker 
+          date={checkInDate}
+          onDateChange={setCheckInDate}
+          label="Check-in (Sáb/Dom)"
+          placeholder="Selecione uma data"
+        />
 
-        <div>
-          <label htmlFor="checkOut" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-            Check-out (Sáb/Dom)
-          </label>
-          <div className="relative">
-            <input
-              type="date"
-              id="checkOut"
-              value={checkOut}
-              onChange={(e) => handleDateChange(e, 'checkOut')}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-            />
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-teal dark:text-teal-light" size={18} />
-          </div>
-        </div>
+        <WeekendDatepicker 
+          date={checkOutDate}
+          onDateChange={setCheckOutDate}
+          label="Check-out (Sáb/Dom)"
+          placeholder="Selecione uma data"
+        />
 
         <div>
           <label htmlFor="roomType" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">

@@ -1,13 +1,12 @@
-
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
+import { WeekendDatepicker } from "../components/WeekendDatepicker";
 import { 
   Upload, 
-  Calendar, 
   Check, 
   CheckCircle2,
   AlertCircle
@@ -23,8 +22,6 @@ const ReservationForm = () => {
     email: "",
     whatsapp: "",
     city: accommodationId ? "" : "dublin",
-    checkIn: "",
-    checkOut: "",
     roomType: accommodationId ? "" : "individual",
     schoolName: "",
     passportFile: null as File | null,
@@ -34,6 +31,8 @@ const ReservationForm = () => {
     agreeTerms: false,
   });
 
+  const [checkInDate, setCheckInDate] = useState<Date | undefined>(undefined);
+  const [checkOutDate, setCheckOutDate] = useState<Date | undefined>(undefined);
   const [passportFileName, setPassportFileName] = useState("");
   const [enrollmentFileName, setEnrollmentFileName] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -80,7 +79,7 @@ const ReservationForm = () => {
     
     // Form validation
     if (!formData.fullName || !formData.email || !formData.whatsapp || !formData.city || 
-        !formData.checkIn || !formData.checkOut || !formData.roomType || !formData.schoolName ||
+        !checkInDate || !checkOutDate || !formData.roomType || !formData.schoolName ||
         !formData.passportFile || !formData.enrollmentFile || !formData.agreeTerms) {
       toast.error("Por favor, preencha todos os campos obrigatórios.", {
         position: "bottom-center",
@@ -262,40 +261,21 @@ const ReservationForm = () => {
                         <option value="double">Quarto de Casal</option>
                       </select>
                     </div>
-                    <div>
-                      <label htmlFor="checkIn" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Check-in*
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="date"
-                          id="checkIn"
-                          name="checkIn"
-                          value={formData.checkIn}
-                          onChange={handleChange}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                          required
-                        />
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-teal dark:text-teal-light" size={18} />
-                      </div>
-                    </div>
-                    <div>
-                      <label htmlFor="checkOut" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Check-out*
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="date"
-                          id="checkOut"
-                          name="checkOut"
-                          value={formData.checkOut}
-                          onChange={handleChange}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                          required
-                        />
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-teal dark:text-teal-light" size={18} />
-                      </div>
-                    </div>
+                    
+                    <WeekendDatepicker
+                      date={checkInDate}
+                      onDateChange={setCheckInDate}
+                      label="Check-in (Apenas Sáb/Dom)*"
+                      placeholder="Selecione uma data"
+                    />
+                    
+                    <WeekendDatepicker
+                      date={checkOutDate}
+                      onDateChange={setCheckOutDate}
+                      label="Check-out (Apenas Sáb/Dom)*"
+                      placeholder="Selecione uma data"
+                    />
+                    
                     <div className="md:col-span-2">
                       <label htmlFor="schoolName" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
                         Nome da Escola*
@@ -545,7 +525,7 @@ const ReservationForm = () => {
       </main>
 
       <Footer />
-      <WhatsAppButton phoneNumber="353000000000" message="Olá! Tenho dúvidas sobre como fazer uma reserva." />
+      <WhatsAppButton phoneNumber="5521970286372" message="Olá! Tenho dúvidas sobre como fazer uma reserva." />
     </div>
   );
 };

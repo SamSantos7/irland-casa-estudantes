@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Euro, Home, MapPin, Calendar, Users, Bath } from "lucide-react";
 
@@ -34,6 +35,7 @@ const AccommodationCard = ({
   bathroomType = "shared",
   bathroomShared = 2,
   genderDivision = "same",
+  importantNotes,
 }: AccommodationCardProps) => {
   const translateRoomType = (type: RoomType) => {
     switch (type) {
