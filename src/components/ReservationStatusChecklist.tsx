@@ -1,5 +1,9 @@
 
-import { Check, Clock, FileText, AlertCircle, Upload, FileSignature, FileCheck, FileSearch } from "lucide-react";
+import { 
+  Check, Clock, FileText, AlertCircle, Upload, 
+  FileSignature, FileCheck, FileSearch, Download,
+  Building, CreditCard, CheckCircle
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export type ReservationStepStatus = 'completed' | 'in_progress' | 'pending';
@@ -29,14 +33,18 @@ const ReservationStatusChecklist = ({ steps, className = "" }: ReservationStatus
         return status === 'completed' ? <FileCheck className="h-5 w-5" /> : <FileText className="h-5 w-5" />;
       case "school_letter":
         return status === 'completed' ? <FileCheck className="h-5 w-5" /> : <FileText className="h-5 w-5" />;
-      case "payment":
-        return status === 'completed' ? <Check className="h-5 w-5" /> : <Clock className="h-5 w-5" />;
+      case "accommodation_availability":
+        return status === 'completed' ? <Building className="h-5 w-5" /> : <Building className="h-5 w-5" />;
       case "contract":
         return status === 'completed' ? <FileSignature className="h-5 w-5" /> : <FileSignature className="h-5 w-5" />;
-      case "accommodation_letter":
+      case "payment":
+        return status === 'completed' ? <CreditCard className="h-5 w-5" /> : <CreditCard className="h-5 w-5" />;
+      case "accommodation_letter_sent":
         return status === 'completed' ? <FileCheck className="h-5 w-5" /> : <FileSearch className="h-5 w-5" />;
+      case "accommodation_letter_download":
+        return status === 'completed' ? <Download className="h-5 w-5" /> : <Download className="h-5 w-5" />;
       case "confirmation":
-        return status === 'completed' ? <Check className="h-5 w-5" /> : <Clock className="h-5 w-5" />;
+        return status === 'completed' ? <CheckCircle className="h-5 w-5" /> : <Clock className="h-5 w-5" />;
       default:
         return status === 'completed' ? <Check className="h-5 w-5" /> : 
                status === 'in_progress' ? <Clock className="h-5 w-5" /> : 

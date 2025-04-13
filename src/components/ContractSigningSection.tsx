@@ -1,21 +1,44 @@
 
 import { ExternalLink, FileSignature } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface ContractSigningSectionProps {
   signatureUrl: string;
   isSigned: boolean;
   className?: string;
+  onSigningComplete?: () => void;
 }
 
-const ContractSigningSection = ({ signatureUrl, isSigned, className = "" }: ContractSigningSectionProps) => {
+const ContractSigningSection = ({ 
+  signatureUrl, 
+  isSigned: initialIsSigned, 
+  className = "",
+  onSigningComplete 
+}: ContractSigningSectionProps) => {
+  const [isSigned, setIsSigned] = useState(initialIsSigned);
+  
+  // Simula o retorno da assinatura do contrato
+  const handleContractSigned = () => {
+    // Em uma implementação real, isso seria chamado quando o usuário retornasse 
+    // da página de assinatura através de um callback ou webhook
+    setTimeout(() => {
+      setIsSigned(true);
+      toast.success("Contrato assinado com sucesso!");
+      if (onSigningComplete) {
+        onSigningComplete();
+      }
+    }, 1000);
+  };
+
   return (
     <div className={`border rounded-lg p-4 bg-white dark:bg-neutrals-dark ${className}`}>
       <h3 className="text-base font-medium mb-4">Assinatura do Contrato</h3>
       
       <div className="flex items-center gap-4">
-        <div className="bg-teal/10 dark:bg-teal-light/10 p-3 rounded-full">
-          <FileSignature className="h-6 w-6 text-teal dark:text-teal-light" />
+        <div className={`p-3 rounded-full ${isSigned ? 'bg-green-100 dark:bg-green-900/20' : 'bg-teal/10 dark:bg-teal-light/10'}`}>
+          <FileSignature className={`h-6 w-6 ${isSigned ? 'text-green-500 dark:text-green-400' : 'text-teal dark:text-teal-light'}`} />
         </div>
         
         <div className="flex-grow">
@@ -29,29 +52,32 @@ const ContractSigningSection = ({ signatureUrl, isSigned, className = "" }: Cont
           </p>
         </div>
         
-        <Button
-          variant={isSigned ? "outline" : "default"}
-          disabled={isSigned}
-        >
-          {isSigned ? (
-            <>
-              <FileSignature className="mr-2 h-4 w-4" />
-              Assinado
-            </>
-          ) : (
-            <>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              <a 
-                href={signatureUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-white"
-              >
-                Assinar Agora
-              </a>
-            </>
-          )}
-        </Button>
+        {isSigned ? (
+          <Button variant="outline" disabled>
+            <FileSignature className="mr-2 h-4 w-4" />
+            Assinado
+          </Button>
+        ) : (
+          <Button
+            variant="default"
+            onClick={handleContractSigned} // Em produção, isso abriria uma nova aba e não chamaria diretamente esta função
+          >
+            <ExternalLink className="mr-2 h-4 w-4" />
+            <a 
+              href={signatureUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-white"
+              onClick={(e) => {
+                // Em produção, removeria esta simulação
+                e.preventDefault();
+                handleContractSigned();
+              }}
+            >
+              Assinar Agora
+            </a>
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
@@ -10,9 +10,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Check, Clock, Download, FileText, Upload, MessageCircle, User, AlertCircle, LogOut, Bath, MapPin, Bed, Users } from "lucide-react";
+import { 
+  ArrowRight, User, LogOut, Bath, MapPin, Bed, 
+  Users, MessageCircle
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import ReservationProgressBar from '../components/ReservationProgressBar';
+import ReservationStatusChecklist, { ReservationStep } from '../components/ReservationStatusChecklist';
+import ContractSigningSection from '../components/ContractSigningSection';
+import DocumentManagementSection, { Document } from '../components/DocumentManagementSection';
+import { toast } from 'sonner';
 
 type ReservationStatus = 'pending' | 'reviewing' | 'approved' | 'completed';
 
@@ -20,7 +26,6 @@ const ClientArea = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
 
   // Mock user data - would come from API in real app
   const userMock = {
@@ -41,23 +46,97 @@ const ClientArea = () => {
       checkOut: "2025-12-31",
       image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
     },
-    documents: {
-      passport: { 
-        status: 'approved',
-        filename: 'passport.pdf',
-        uploaded: '2025-04-05' 
+    progressSteps: [
+      {
+        id: 'passport',
+        label: 'Envio do passaporte',
+        status: 'completed' as const,
+        description: 'Seu passaporte foi aprovado.'
       },
-      enrollmentLetter: { 
-        status: 'pending',
-        filename: 'enrollment_letter.pdf',
-        uploaded: '2025-04-05' 
+      {
+        id: 'school_letter',
+        label: 'Envio da carta da escola',
+        status: 'in_progress' as const,
+        description: 'Estamos analisando sua carta da escola.'
       },
-      paymentProof: { 
-        status: 'not_uploaded',
-        filename: '',
-        uploaded: '' 
+      {
+        id: 'accommodation_availability',
+        label: 'Aguardar disponibilidade da acomodação',
+        status: 'pending' as const,
+        description: 'Aguardando confirmação de disponibilidade do fornecedor.'
+      },
+      {
+        id: 'contract',
+        label: 'Assinatura do contrato',
+        status: 'pending' as const,
+        description: 'Você poderá assinar o contrato após a confirmação de disponibilidade.'
+      },
+      {
+        id: 'payment',
+        label: 'Envio do comprovante de pagamento',
+        status: 'pending' as const,
+        description: 'Envie o comprovante após assinar o contrato e realizar o pagamento.'
+      },
+      {
+        id: 'accommodation_letter_sent',
+        label: 'Documento da acomodação enviado',
+        status: 'pending' as const,
+        description: 'Você receberá o documento após o pagamento ser confirmado.'
+      },
+      {
+        id: 'accommodation_letter_download',
+        label: 'Download da carta da acomodação',
+        status: 'pending' as const,
+        description: 'Você poderá baixar a carta quando estiver disponível.'
+      },
+      {
+        id: 'confirmation',
+        label: 'Reserva confirmada',
+        status: 'pending' as const,
+        description: 'Sua reserva será finalizada após todas as etapas anteriores.'
       }
-    },
+    ] as ReservationStep[],
+    documents: [
+      {
+        id: 'passport',
+        name: 'Passaporte',
+        type: 'upload',
+        description: 'Página principal do seu passaporte com foto e dados pessoais',
+        status: 'approved',
+        filename: 'passport_maria_silva.pdf',
+        uploadDate: '05/04/2025',
+      },
+      {
+        id: 'school_letter',
+        name: 'Carta da Escola',
+        type: 'upload',
+        description: 'Comprovante de matrícula na instituição de ensino',
+        status: 'pending',
+        filename: 'carta_escola_maria.pdf',
+        uploadDate: '05/04/2025',
+      },
+      {
+        id: 'payment_proof',
+        name: 'Comprovante de Pagamento',
+        type: 'upload',
+        description: 'Comprovante da transferência ou pagamento da reserva',
+        status: 'not_uploaded',
+      },
+      {
+        id: 'accommodation_letter',
+        name: 'Carta da Acomodação',
+        type: 'download',
+        description: 'Documento oficial da sua acomodação para apresentação na imigração',
+        status: 'pending',
+      },
+      {
+        id: 'contract',
+        name: 'Contrato Assinado',
+        type: 'download',
+        description: 'Cópia do contrato assinado por ambas as partes',
+        status: 'pending',
+      }
+    ] as Document[],
     messages: [
       {
         id: 1,
@@ -71,33 +150,6 @@ const ClientArea = () => {
         content: 'Olá Maria, verificamos seu passaporte e está tudo certo. Ainda precisamos analisar sua carta de matrícula.',
         date: '2025-04-06T14:30:00'
       }
-    ],
-    progressSteps: [
-      {
-        id: 'step1',
-        label: 'Reserva enviada',
-        status: 'completed' as const
-      },
-      {
-        id: 'step2',
-        label: 'Documentação enviada',
-        status: 'in_progress' as const
-      },
-      {
-        id: 'step3',
-        label: 'Aguardando confirmação do fornecedor',
-        status: 'pending' as const
-      },
-      {
-        id: 'step4',
-        label: 'Pagamento confirmado',
-        status: 'pending' as const
-      },
-      {
-        id: 'step5',
-        label: 'Carta da acomodação enviada',
-        status: 'pending' as const
-      }
     ]
   };
 
@@ -106,6 +158,7 @@ const ClientArea = () => {
     // In a real app, this would authenticate with a backend
     if (email && password) {
       setIsLoggedIn(true);
+      toast.success("Login realizado com sucesso!");
     }
   };
 
@@ -113,35 +166,43 @@ const ClientArea = () => {
     setIsLoggedIn(false);
     setEmail('');
     setPassword('');
+    toast.info("Logout realizado com sucesso.");
+  };
+
+  const handleDocumentUpload = (documentId: string, file: File) => {
+    // Em uma aplicação real, isso enviaria o arquivo para o servidor
+    toast.success(`Documento "${file.name}" enviado com sucesso!`);
+    console.log(`Uploading file ${file.name} for document ${documentId}`);
+  };
+
+  const handleDocumentDownload = (documentId: string) => {
+    // Em uma aplicação real, isso faria o download do arquivo
+    const doc = userMock.documents.find(d => d.id === documentId);
+    if (doc && doc.status !== 'pending') {
+      toast.success(`Baixando "${doc.name}"`);
+    } else {
+      toast.error("Este documento ainda não está disponível para download.");
+    }
+  };
+
+  const handleContractSigned = () => {
+    // Atualizar o status da etapa de contrato no checklist
+    toast.success("Contrato assinado com sucesso!");
+    // Em uma aplicação real, isso atualizaria o estado no servidor
   };
 
   const getStatusDisplay = (status: ReservationStatus) => {
     switch (status) {
       case 'pending':
-        return { label: 'Pendente', icon: <Clock className="h-5 w-5 text-amber-500" />, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' };
+        return { label: 'Pendente', color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' };
       case 'reviewing':
-        return { label: 'Em análise', icon: <FileText className="h-5 w-5 text-blue-500" />, color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/30' };
+        return { label: 'Em análise', color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/30' };
       case 'approved':
-        return { label: 'Aprovada', icon: <Check className="h-5 w-5 text-green-500" />, color: 'text-green-500 bg-green-50 dark:bg-green-950/30' };
+        return { label: 'Aprovada', color: 'text-green-500 bg-green-50 dark:bg-green-950/30' };
       case 'completed':
-        return { label: 'Concluída', icon: <Check className="h-5 w-5 text-green-500" />, color: 'text-green-500 bg-green-50 dark:bg-green-950/30' };
+        return { label: 'Concluída', color: 'text-green-500 bg-green-50 dark:bg-green-950/30' };
       default:
-        return { label: 'Desconhecido', icon: <AlertCircle className="h-5 w-5 text-gray-500" />, color: 'text-gray-500 bg-gray-50 dark:bg-gray-800' };
-    }
-  };
-
-  const getDocumentStatusDisplay = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return { label: 'Aprovado', icon: <Check className="h-4 w-4 text-green-500" />, color: 'text-green-500 bg-green-50 dark:bg-green-950/30' };
-      case 'pending':
-        return { label: 'Em análise', icon: <Clock className="h-4 w-4 text-amber-500" />, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' };
-      case 'rejected':
-        return { label: 'Reprovado', icon: <AlertCircle className="h-4 w-4 text-red-500" />, color: 'text-red-500 bg-red-50 dark:bg-red-950/30' };
-      case 'not_uploaded':
-        return { label: 'Não enviado', icon: <Upload className="h-4 w-4 text-gray-500" />, color: 'text-gray-500 bg-gray-50 dark:bg-gray-800' };
-      default:
-        return { label: 'Desconhecido', icon: <AlertCircle className="h-4 w-4 text-gray-500" />, color: 'text-gray-500 bg-gray-50 dark:bg-gray-800' };
+        return { label: 'Desconhecido', color: 'text-gray-500 bg-gray-50 dark:bg-gray-800' };
     }
   };
 
@@ -313,7 +374,6 @@ const ClientArea = () => {
                               </div>
                               
                               <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm ${getStatusDisplay(userMock.reservationStatus).color}`}>
-                                {getStatusDisplay(userMock.reservationStatus).icon}
                                 <span>Reserva {getStatusDisplay(userMock.reservationStatus).label}</span>
                               </div>
                               
@@ -328,48 +388,10 @@ const ClientArea = () => {
 
                       <Card>
                         <CardHeader>
-                          <CardTitle>Status dos Documentos</CardTitle>
+                          <CardTitle>Progresso da Reserva</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <FileText className="h-4 w-4 text-muted-foreground" />
-                              <span>Passaporte</span>
-                            </div>
-                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.passport.status).color}`}>
-                              {getDocumentStatusDisplay(userMock.documents.passport.status).icon}
-                              <span>{getDocumentStatusDisplay(userMock.documents.passport.status).label}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <FileText className="h-4 w-4 text-muted-foreground" />
-                              <span>Carta de Matrícula</span>
-                            </div>
-                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).color}`}>
-                              {getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).icon}
-                              <span>{getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).label}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <FileText className="h-4 w-4 text-muted-foreground" />
-                              <span>Comprovante de Pagamento</span>
-                            </div>
-                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.paymentProof.status).color}`}>
-                              {getDocumentStatusDisplay(userMock.documents.paymentProof.status).icon}
-                              <span>{getDocumentStatusDisplay(userMock.documents.paymentProof.status).label}</span>
-                            </div>
-                          </div>
-
-                          <div className="pt-4">
-                            <Button variant="outline" className="w-full flex items-center gap-2">
-                              <Upload className="h-4 w-4" />
-                              <span>Gerenciar documentos</span>
-                            </Button>
-                          </div>
+                        <CardContent>
+                          <ReservationStatusChecklist steps={userMock.progressSteps} />
                         </CardContent>
                       </Card>
                     </div>
@@ -403,100 +425,25 @@ const ClientArea = () => {
 
                       <Card>
                         <CardHeader>
-                          <CardTitle>Progresso da Reserva</CardTitle>
+                          <CardTitle>Assinatura do Contrato</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <ReservationProgressBar steps={userMock.progressSteps} />
+                          <ContractSigningSection 
+                            signatureUrl="https://form.jotform.com/241042512844348" 
+                            isSigned={false} 
+                            onSigningComplete={handleContractSigned}
+                          />
                         </CardContent>
                       </Card>
                     </div>
                   </TabsContent>
                   
                   <TabsContent value="documents">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Documentos</CardTitle>
-                        <CardDescription>Gerencie os documentos da sua reserva</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-6">
-                          <div className="p-4 border border-border rounded-lg">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div>
-                                <h3 className="font-medium">Passaporte</h3>
-                                <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                  <span>{userMock.documents.passport.filename}</span>
-                                  <span>•</span>
-                                  <span>Enviado em {formatDate(userMock.documents.passport.uploaded)}</span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.passport.status).color}`}>
-                                  {getDocumentStatusDisplay(userMock.documents.passport.status).icon}
-                                  <span>{getDocumentStatusDisplay(userMock.documents.passport.status).label}</span>
-                                </div>
-                                <Button variant="outline" size="sm">
-                                  <Upload className="h-4 w-4" />
-                                  <span className="ml-2">Atualizar</span>
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="p-4 border border-border rounded-lg">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div>
-                                <h3 className="font-medium">Carta de Matrícula</h3>
-                                <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                  <span>{userMock.documents.enrollmentLetter.filename}</span>
-                                  <span>•</span>
-                                  <span>Enviado em {formatDate(userMock.documents.enrollmentLetter.uploaded)}</span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).color}`}>
-                                  {getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).icon}
-                                  <span>{getDocumentStatusDisplay(userMock.documents.enrollmentLetter.status).label}</span>
-                                </div>
-                                <Button variant="outline" size="sm">
-                                  <Upload className="h-4 w-4" />
-                                  <span className="ml-2">Atualizar</span>
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="p-4 border border-border rounded-lg">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div>
-                                <h3 className="font-medium">Comprovante de Pagamento</h3>
-                                <div className="text-sm text-muted-foreground">
-                                  {userMock.documents.paymentProof.status === 'not_uploaded' ? (
-                                    <span>Nenhum arquivo enviado</span>
-                                  ) : (
-                                    <>
-                                      <span>{userMock.documents.paymentProof.filename}</span>
-                                      <span>•</span>
-                                      <span>Enviado em {formatDate(userMock.documents.paymentProof.uploaded)}</span>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getDocumentStatusDisplay(userMock.documents.paymentProof.status).color}`}>
-                                  {getDocumentStatusDisplay(userMock.documents.paymentProof.status).icon}
-                                  <span>{getDocumentStatusDisplay(userMock.documents.paymentProof.status).label}</span>
-                                </div>
-                                <Button variant="outline" size="sm">
-                                  <Upload className="h-4 w-4" />
-                                  <span className="ml-2">{userMock.documents.paymentProof.status === 'not_uploaded' ? 'Enviar' : 'Atualizar'}</span>
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <DocumentManagementSection 
+                      documents={userMock.documents}
+                      onUpload={handleDocumentUpload}
+                      onDownload={handleDocumentDownload}
+                    />
                   </TabsContent>
                   
                   <TabsContent value="messages">
