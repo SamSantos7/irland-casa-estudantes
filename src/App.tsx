@@ -18,6 +18,15 @@ import Blog from "./pages/Blog";
 import ClientArea from "./pages/ClientArea";
 import RefundPolicy from "./pages/RefundPolicy";
 import Terms from "./pages/Terms";
+import AdminLayout from "./layouts/AdminLayout";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminReservations from "./pages/admin/Reservations";
+import AdminClients from "./pages/admin/Clients";
+import AdminDocuments from "./pages/admin/Documents";
+import AdminCommunication from "./pages/admin/Communication";
+import AdminUsers from "./pages/admin/Users";
+import AdminFinance from "./pages/admin/Finance";
+import AdminAccommodations from "./pages/admin/Accommodations";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -43,6 +52,19 @@ const App = () => {
                   <Route path="/client-area" element={<ClientArea />} />
                   <Route path="/refund-policy" element={<RefundPolicy />} />
                   <Route path="/terms" element={<Terms />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="reservations" element={<AdminReservations />} />
+                    <Route path="clients" element={<AdminClients />} />
+                    <Route path="documents" element={<AdminDocuments />} />
+                    <Route path="communication" element={<AdminCommunication />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="finance" element={<AdminFinance />} />
+                    <Route path="accommodations" element={<AdminAccommodations />} />
+                  </Route>
+                  
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
