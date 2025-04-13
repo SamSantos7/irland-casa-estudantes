@@ -136,12 +136,12 @@ const Contact = () => {
                           WhatsApp
                         </h3>
                         <a
-                          href="https://wa.me/353000000000"
+                          href="https://wa.me/5521970286372"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-teal dark:text-teal-light hover:underline mt-1 block"
                         >
-                          +353 (0) 00 000 0000
+                          +55 (21) 97028-6372
                         </a>
                       </div>
                     </div>
@@ -178,7 +178,7 @@ const Contact = () => {
 
                   <div className="mt-10">
                     <a
-                      href="https://wa.me/353000000000"
+                      href="https://wa.me/5521970286372"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 bg-[#25D366] text-white py-3 px-6 rounded-lg hover:bg-opacity-90 transition btn-hover-effect"
@@ -323,7 +323,7 @@ const Contact = () => {
       </main>
 
       <Footer />
-      <WhatsAppButton phoneNumber="353000000000" />
+      <WhatsAppButton phoneNumber="5521970286372" />
     </div>
   );
 };

@@ -15,7 +15,7 @@ const AccommodationWhatsApp = ({
   roomType = "um quarto",
   className = "",
 }: AccommodationWhatsAppProps) => {
-  const phoneNumber = "5521970286372";
+  const phoneNumber = "5521970286372"; // Número atualizado
 
   const getDefaultMessage = (): string => {
     const baseMessage = `Olá! Tenho interesse em reservar ${roomType}`;

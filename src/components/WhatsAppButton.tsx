@@ -13,7 +13,7 @@ interface WhatsAppButtonProps {
 }
 
 const WhatsAppButton = ({
-  phoneNumber = "5521970286372",
+  phoneNumber = "5521970286372", // Número atualizado
   message = "Olá, gostaria de fazer uma reserva de acomodação estudantil na Irlanda.",
   className = "",
   showOptions = false,

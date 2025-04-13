@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Twitter, Linkedin, MessageCircle, Star } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -150,7 +149,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Reviews Section */}
         <div className="mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex flex-col items-center mb-6">
             <h3 className="text-lg font-semibold mb-3 text-neutrals-dark dark:text-white">Avaliações de Nossos Clientes</h3>
