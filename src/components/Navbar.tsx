@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon, User, BookText } from "lucide-react";
 import { useTheme } from "../hooks/use-theme";
 
 const Navbar = () => {
@@ -29,7 +28,7 @@ const Navbar = () => {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -47,7 +46,6 @@ const Navbar = () => {
           </span>
         </Link>
 
-        {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-8">
           <Link
             to="/"
@@ -80,9 +78,23 @@ const Navbar = () => {
           >
             Reservar
           </Link>
+
+          <Link
+            to="/client-area"
+            className="text-neutrals-dark dark:text-white hover:text-teal dark:hover:text-teal-light transition-colors flex items-center"
+          >
+            <User size={16} className="mr-2" />
+            Área do Cliente
+          </Link>
+          <Link
+            to="/blog"
+            className="text-neutrals-dark dark:text-white hover:text-teal dark:hover:text-teal-light transition-colors flex items-center"
+          >
+            <BookText size={16} className="mr-2" />
+            Blog
+          </Link>
         </div>
 
-        {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center space-x-4">
           <button
             onClick={toggleTheme}
@@ -100,7 +112,6 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-neutrals-dark shadow-md py-4 animate-fade-in">
             <div className="container flex flex-col space-y-4">
@@ -131,6 +142,23 @@ const Navbar = () => {
                 onClick={toggleMenu}
               >
                 Reservar
+              </Link>
+
+              <Link
+                to="/client-area"
+                className="text-neutrals-dark dark:text-white hover:text-teal dark:hover:text-teal-light transition-colors flex items-center"
+                onClick={toggleMenu}
+              >
+                <User size={16} className="mr-2" />
+                Área do Cliente
+              </Link>
+              <Link
+                to="/blog"
+                className="text-neutrals-dark dark:text-white hover:text-teal dark:hover:text-teal-light transition-colors flex items-center"
+                onClick={toggleMenu}
+              >
+                <BookText size={16} className="mr-2" />
+                Blog
               </Link>
             </div>
           </div>
