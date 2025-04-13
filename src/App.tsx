@@ -27,6 +27,7 @@ import AdminCommunication from "./pages/admin/Communication";
 import AdminUsers from "./pages/admin/Users";
 import AdminFinance from "./pages/admin/Finance";
 import AdminAccommodations from "./pages/admin/Accommodations";
+import AdminAccommodationDetail from "./pages/admin/AccommodationDetail";
 
 const App = () => {
   // Create a new QueryClient instance inside the component to ensure proper React context
@@ -62,6 +63,7 @@ const App = () => {
                   <Route path="users" element={<AdminUsers />} />
                   <Route path="finance" element={<AdminFinance />} />
                   <Route path="accommodations" element={<AdminAccommodations />} />
+                  <Route path="accommodations/:id" element={<AdminAccommodationDetail />} />
                 </Route>
                 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
