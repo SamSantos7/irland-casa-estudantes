@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./hooks/use-theme";
 import { HelmetProvider } from "react-helmet-async";
-import React, { StrictMode } from "react";
+import React from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Accommodations from "./pages/Accommodations";
@@ -28,52 +28,50 @@ import AdminUsers from "./pages/admin/Users";
 import AdminFinance from "./pages/admin/Finance";
 import AdminAccommodations from "./pages/admin/Accommodations";
 
-// Create a new QueryClient instance
-const queryClient = new QueryClient();
-
 const App = () => {
+  // Create a new QueryClient instance inside the component to ensure proper React context
+  const queryClient = new QueryClient();
+  
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light">
-          <HelmetProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/accommodations" element={<Accommodations />} />
-                  <Route path="/accommodations/:id" element={<AccommodationDetail />} />
-                  <Route path="/reservation-form" element={<ReservationForm />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/blog" element={<Blog />} />
-                  <Route path="/client-area" element={<ClientArea />} />
-                  <Route path="/refund-policy" element={<RefundPolicy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  
-                  {/* Admin Routes */}
-                  <Route path="/admin" element={<AdminLayout />}>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="reservations" element={<AdminReservations />} />
-                    <Route path="clients" element={<AdminClients />} />
-                    <Route path="documents" element={<AdminDocuments />} />
-                    <Route path="communication" element={<AdminCommunication />} />
-                    <Route path="users" element={<AdminUsers />} />
-                    <Route path="finance" element={<AdminFinance />} />
-                    <Route path="accommodations" element={<AdminAccommodations />} />
-                  </Route>
-                  
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </HelmetProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light">
+        <HelmetProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/accommodations" element={<Accommodations />} />
+                <Route path="/accommodations/:id" element={<AccommodationDetail />} />
+                <Route path="/reservation-form" element={<ReservationForm />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/client-area" element={<ClientArea />} />
+                <Route path="/refund-policy" element={<RefundPolicy />} />
+                <Route path="/terms" element={<Terms />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="reservations" element={<AdminReservations />} />
+                  <Route path="clients" element={<AdminClients />} />
+                  <Route path="documents" element={<AdminDocuments />} />
+                  <Route path="communication" element={<AdminCommunication />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="finance" element={<AdminFinance />} />
+                  <Route path="accommodations" element={<AdminAccommodations />} />
+                </Route>
+                
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </HelmetProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 
