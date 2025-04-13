@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Bath, Bed, Edit, Eye, Filter, House, MapPin, MoreHorizontal, Plus, Search, Trash2, Users, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,13 +39,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
+import { Database } from "@/integrations/supabase/types";
+
+// Define enum types
+type RoomType = Database["public"]["Enums"]["room_type"];
 
 // Tipos de acomodação
 type Accommodation = {
   id: string;
   title: string;
   city: string;
-  room_type: string;
+  room_type: RoomType;
   bathroom_type: string;
   gender: string;
   price_per_week: number;
@@ -66,7 +69,7 @@ const AdminAccommodations = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [cityFilter, setCityFilter] = useState("all");
-  const [roomTypeFilter, setRoomTypeFilter] = useState("all");
+  const [roomTypeFilter, setRoomTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [selectedAccommodationId, setSelectedAccommodationId] = useState<string | null>(null);
@@ -90,7 +93,11 @@ const AdminAccommodations = () => {
       }
       
       if (roomTypeFilter !== "all") {
-        query = query.eq("room_type", roomTypeFilter);
+        // Fix: Only apply the filter if the value is a valid room type
+        const validRoomTypes: RoomType[] = ["individual", "duplo", "triplo", "quadruplo"];
+        if (validRoomTypes.includes(roomTypeFilter as RoomType)) {
+          query = query.eq("room_type", roomTypeFilter as RoomType);
+        }
       }
       
       if (statusFilter !== "all") {

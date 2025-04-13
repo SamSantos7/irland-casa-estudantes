@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -185,11 +184,11 @@ const AccommodationForm = ({
   };
   
   // Carregar dados quando o componente montar (se for edição)
-  useState(() => {
+  useEffect(() => {
     if (accommodationId) {
       loadAccommodationData();
     }
-  });
+  }, [accommodationId]);
   
   // Função para upload de imagens
   const uploadImages = async (accommodationId: string): Promise<string[]> => {
@@ -269,15 +268,24 @@ const AccommodationForm = ({
       
       // Criar ou atualizar acomodação
       const accommodationData = {
-        ...values,
-        // Garantir que o preço seja enviado como número
-        price_per_week: Number(values.price_per_week),
-        // Garantir que min_weeks seja um número
-        min_weeks: Number(values.min_weeks),
-        // Converter bathroom_shared_count para número se existir
-        bathroom_shared_count: values.bathroom_shared_count 
+        title: values.title,
+        description: values.description || "",
+        city: values.city,
+        neighborhood: values.neighborhood || "",
+        address: values.address || "",
+        google_maps_link: values.google_maps_link || "",
+        room_type: values.room_type,
+        bathroom_type: values.bathroom_type,
+        bathroom_shared_count: values.bathroom_shared_count !== undefined 
           ? Number(values.bathroom_shared_count) 
           : null,
+        gender: values.gender,
+        provider: values.provider,
+        price_per_week: Number(values.price_per_week),
+        min_weeks: Number(values.min_weeks),
+        is_active: values.is_active,
+        checkin_day: values.checkin_day,
+        amenities: values.amenities || []
       };
       
       let accommodationResult;
