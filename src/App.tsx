@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,7 +29,6 @@ import AdminAccommodations from "./pages/admin/Accommodations";
 import AdminAccommodationDetail from "./pages/admin/AccommodationDetail";
 
 const App = () => {
-  // Create a new QueryClient instance inside the component to ensure proper React context
   const queryClient = new QueryClient();
   
   return (
@@ -53,7 +51,6 @@ const App = () => {
                 <Route path="/refund-policy" element={<RefundPolicy />} />
                 <Route path="/terms" element={<Terms />} />
                 
-                {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<AdminDashboard />} />
                   <Route path="reservations" element={<AdminReservations />} />
@@ -66,7 +63,6 @@ const App = () => {
                   <Route path="accommodations/:id" element={<AdminAccommodationDetail />} />
                 </Route>
                 
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
