@@ -333,6 +333,7 @@ export type Database = {
         Row: {
           created_at: string
           first_name: string | null
+          form_submitted: boolean | null
           id: string
           last_name: string | null
           nationality: string | null
@@ -343,6 +344,7 @@ export type Database = {
         Insert: {
           created_at?: string
           first_name?: string | null
+          form_submitted?: boolean | null
           id: string
           last_name?: string | null
           nationality?: string | null
@@ -353,6 +355,7 @@ export type Database = {
         Update: {
           created_at?: string
           first_name?: string | null
+          form_submitted?: boolean | null
           id?: string
           last_name?: string | null
           nationality?: string | null
@@ -412,6 +415,19 @@ export type Database = {
           check_in: string
           check_out: string
           created_at: string
+          emergency_contact_email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relation: string | null
+          extra_night_dates: string | null
+          extra_night_quantity: number | null
+          extra_night_required: boolean | null
+          extra_night_type: string | null
+          food_restriction: boolean | null
+          food_restriction_details: string | null
+          form_submitted: boolean | null
+          health_restriction: boolean | null
+          health_restriction_details: string | null
           id: string
           internal_notes: string | null
           status: Database["public"]["Enums"]["reservation_status"]
@@ -425,6 +441,19 @@ export type Database = {
           check_in: string
           check_out: string
           created_at?: string
+          emergency_contact_email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          extra_night_dates?: string | null
+          extra_night_quantity?: number | null
+          extra_night_required?: boolean | null
+          extra_night_type?: string | null
+          food_restriction?: boolean | null
+          food_restriction_details?: string | null
+          form_submitted?: boolean | null
+          health_restriction?: boolean | null
+          health_restriction_details?: string | null
           id?: string
           internal_notes?: string | null
           status?: Database["public"]["Enums"]["reservation_status"]
@@ -438,6 +467,19 @@ export type Database = {
           check_in?: string
           check_out?: string
           created_at?: string
+          emergency_contact_email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          extra_night_dates?: string | null
+          extra_night_quantity?: number | null
+          extra_night_required?: boolean | null
+          extra_night_type?: string | null
+          food_restriction?: boolean | null
+          food_restriction_details?: string | null
+          form_submitted?: boolean | null
+          health_restriction?: boolean | null
+          health_restriction_details?: string | null
           id?: string
           internal_notes?: string | null
           status?: Database["public"]["Enums"]["reservation_status"]

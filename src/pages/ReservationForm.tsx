@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const ReservationForm = () => {
   const [searchParams] = useSearchParams();
@@ -29,6 +30,18 @@ const ReservationForm = () => {
     paymentCurrency: "eur",
     comments: "",
     agreeTerms: false,
+    foodRestriction: false,
+    foodRestrictionDetails: "",
+    healthRestriction: false,
+    healthRestrictionDetails: "",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
+    emergencyContactEmail: "",
+    emergencyContactRelation: "",
+    extraNightRequired: false,
+    extraNightType: "",
+    extraNightQuantity: 0,
+    extraNightDates: "",
   });
 
   const [checkInDate, setCheckInDate] = useState<Date | undefined>(undefined);
@@ -74,13 +87,20 @@ const ReservationForm = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Form validation
-    if (!formData.fullName || !formData.email || !formData.whatsapp || !formData.city || 
-        !checkInDate || !checkOutDate || !formData.roomType || !formData.schoolName ||
-        !formData.passportFile || !formData.enrollmentFile || !formData.agreeTerms) {
+    if (!formData.fullName || !formData.email || !formData.whatsapp || 
+        !formData.city || !checkInDate || !checkOutDate || 
+        !formData.roomType || !formData.schoolName ||
+        !formData.passportFile || !formData.enrollmentFile || 
+        !formData.agreeTerms ||
+        (formData.foodRestriction && !formData.foodRestrictionDetails) ||
+        (formData.healthRestriction && !formData.healthRestrictionDetails) ||
+        !formData.emergencyContactName || !formData.emergencyContactPhone ||
+        !formData.emergencyContactEmail || !formData.emergencyContactRelation ||
+        (formData.extraNightRequired && (!formData.extraNightType || !formData.extraNightQuantity))
+    ) {
       toast.error("Por favor, preencha todos os campos obrigatórios.", {
         position: "bottom-center",
         icon: <AlertCircle className="text-red-500" />,
@@ -88,23 +108,74 @@ const ReservationForm = () => {
       return;
     }
 
-    setSubmitting(true);
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: 'temporaryPassword123!',
+        options: {
+          data: {
+            full_name: formData.fullName,
+            phone: formData.whatsapp
+          }
+        }
+      });
 
-    // Simulate form submission
-    setTimeout(() => {
-      setSubmitting(false);
-      setSubmitted(true);
-      
+      if (signUpError) {
+        throw signUpError;
+      }
+
+      const { data: reservationData, error: reservationError } = await supabase
+        .from('reservations')
+        .insert({
+          user_id: data.user?.id,
+          accommodation_id: accommodationId,
+          check_in: checkInDate,
+          check_out: checkOutDate,
+          food_restriction: formData.foodRestriction,
+          food_restriction_details: formData.foodRestrictionDetails,
+          health_restriction: formData.healthRestriction,
+          health_restriction_details: formData.healthRestrictionDetails,
+          emergency_contact_name: formData.emergencyContactName,
+          emergency_contact_phone: formData.emergencyContactPhone,
+          emergency_contact_email: formData.emergencyContactEmail,
+          emergency_contact_relation: formData.emergencyContactRelation,
+          extra_night_required: formData.extraNightRequired,
+          extra_night_type: formData.extraNightType,
+          extra_night_quantity: formData.extraNightQuantity,
+          extra_night_dates: formData.extraNightDates,
+          form_submitted: true,
+          total_price: 0,
+          weeks: 0
+        });
+
+      if (reservationError) {
+        throw reservationError;
+      }
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ form_submitted: true })
+        .eq('id', data.user?.id);
+
+      if (profileError) {
+        throw profileError;
+      }
+
       toast.success("Reserva enviada com sucesso!", {
         position: "bottom-center",
         icon: <CheckCircle2 className="text-green-500" />,
       });
       
-      // Redirect after 3 seconds
       setTimeout(() => {
-        navigate("/");
+        navigate("/client-area");
       }, 3000);
-    }, 1500);
+    } catch (error) {
+      console.error("Erro no envio do formulário:", error);
+      toast.error("Ocorreu um erro ao enviar o formulário. Por favor, tente novamente.", {
+        position: "bottom-center",
+        icon: <AlertCircle className="text-red-500" />,
+      });
+    }
   };
 
   if (submitted) {
