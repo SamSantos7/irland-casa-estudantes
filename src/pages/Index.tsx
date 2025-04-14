@@ -222,7 +222,7 @@ const Index = () => {
                   Blog
                 </h3>
                 <p className="text-muted-foreground">
-                  Dicas e informações para estudantes na Irlanda
+                  Dicas e informações para estudantes
                 </p>
               </div>
               <ArrowRight size={20} className="ml-auto text-teal dark:text-teal-light" />
