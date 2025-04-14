@@ -97,8 +97,6 @@ const ReservationForm = () => {
         !formData.roomType || !formData.schoolName ||
         !formData.passportFile || !formData.enrollmentFile || 
         !formData.agreeTerms ||
-        (formData.foodRestriction && !formData.foodRestrictionDetails) ||
-        (formData.healthRestriction && !formData.healthRestrictionDetails) ||
         !formData.emergencyContactName || !formData.emergencyContactPhone ||
         !formData.emergencyContactEmail || !formData.emergencyContactRelation ||
         (formData.extraNightRequired && (!formData.extraNightType || !formData.extraNightQuantity))
@@ -473,7 +471,7 @@ const ReservationForm = () => {
                     <div>
                       <div className="flex items-center mb-2">
                         <label htmlFor="foodRestriction" className="text-sm font-medium text-neutrals-dark dark:text-white mr-3">
-                          Você possui alguma restrição alimentar?*
+                          Você possui alguma restrição alimentar?
                         </label>
                         <div className="flex gap-4">
                           <label className="flex items-center">
@@ -498,6 +496,23 @@ const ReservationForm = () => {
                             </div>
                             <span className="ml-2 text-neutrals-dark dark:text-white">
                               Sim
+                            </span>
+                          </label>
+                          <label className="flex items-center">
+                            <div
+                              className={`w-5 h-5 rounded-md border flex items-center justify-center ${
+                                !formData.foodRestriction
+                                  ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
+                                  : "border-gray-300 dark:border-gray-600"
+                              }`}
+                              onClick={() => setFormData({ ...formData, foodRestriction: false, foodRestrictionDetails: "" })}
+                            >
+                              {!formData.foodRestriction && (
+                                <Check size={14} className="text-white dark:text-teal" />
+                              )}
+                            </div>
+                            <span className="ml-2 text-neutrals-dark dark:text-white">
+                              Não
                             </span>
                           </label>
                         </div>
@@ -525,7 +540,7 @@ const ReservationForm = () => {
                     <div className="mt-4">
                       <div className="flex items-center mb-2">
                         <label htmlFor="healthRestriction" className="text-sm font-medium text-neutrals-dark dark:text-white mr-3">
-                          Você possui alguma restrição de saúde?*
+                          Você possui alguma restrição de saúde?
                         </label>
                         <div className="flex gap-4">
                           <label className="flex items-center">
@@ -550,6 +565,23 @@ const ReservationForm = () => {
                             </div>
                             <span className="ml-2 text-neutrals-dark dark:text-white">
                               Sim
+                            </span>
+                          </label>
+                          <label className="flex items-center">
+                            <div
+                              className={`w-5 h-5 rounded-md border flex items-center justify-center ${
+                                !formData.healthRestriction
+                                  ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
+                                  : "border-gray-300 dark:border-gray-600"
+                              }`}
+                              onClick={() => setFormData({ ...formData, healthRestriction: false, healthRestrictionDetails: "" })}
+                            >
+                              {!formData.healthRestriction && (
+                                <Check size={14} className="text-white dark:text-teal" />
+                              )}
+                            </div>
+                            <span className="ml-2 text-neutrals-dark dark:text-white">
+                              Não
                             </span>
                           </label>
                         </div>
@@ -681,6 +713,29 @@ const ReservationForm = () => {
                           </div>
                           <span className="ml-2 text-neutrals-dark dark:text-white">
                             Sim
+                          </span>
+                        </label>
+                        <label className="flex items-center">
+                          <div
+                            className={`w-5 h-5 rounded-md border flex items-center justify-center ${
+                              !formData.extraNightRequired
+                                ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
+                                : "border-gray-300 dark:border-gray-600"
+                            }`}
+                            onClick={() => setFormData({ 
+                              ...formData, 
+                              extraNightRequired: false, 
+                              extraNightType: "",
+                              extraNightQuantity: 0,
+                              extraNightDates: ""
+                            })}
+                          >
+                            {!formData.extraNightRequired && (
+                              <Check size={14} className="text-white dark:text-teal" />
+                            )}
+                          </div>
+                          <span className="ml-2 text-neutrals-dark dark:text-white">
+                            Não
                           </span>
                         </label>
                       </div>
