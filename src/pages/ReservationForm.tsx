@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -89,6 +90,7 @@ const ReservationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     
     if (!formData.fullName || !formData.email || !formData.whatsapp || 
         !formData.city || !checkInDate || !checkOutDate || 
@@ -105,6 +107,7 @@ const ReservationForm = () => {
         position: "bottom-center",
         icon: <AlertCircle className="text-red-500" />,
       });
+      setSubmitting(false);
       return;
     }
 
@@ -124,10 +127,13 @@ const ReservationForm = () => {
         throw signUpError;
       }
 
+      if (!data.user) {
+        throw new Error("Não foi possível criar o usuário.");
+      }
+
       const { data: reservationData, error: reservationError } = await supabase
         .from('reservations')
-        .insert({
-          user_id: data.user?.id,
+        .insert([{
           accommodation_id: accommodationId,
           check_in: checkInDate,
           check_out: checkOutDate,
@@ -145,8 +151,9 @@ const ReservationForm = () => {
           extra_night_dates: formData.extraNightDates,
           form_submitted: true,
           total_price: 0,
-          weeks: 0
-        });
+          weeks: 0,
+          user_id: data.user.id
+        }]);
 
       if (reservationError) {
         throw reservationError;
@@ -155,7 +162,7 @@ const ReservationForm = () => {
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ form_submitted: true })
-        .eq('id', data.user?.id);
+        .eq('id', data.user.id);
 
       if (profileError) {
         throw profileError;
@@ -166,6 +173,8 @@ const ReservationForm = () => {
         icon: <CheckCircle2 className="text-green-500" />,
       });
       
+      setSubmitted(true);
+      
       setTimeout(() => {
         navigate("/client-area");
       }, 3000);
@@ -175,6 +184,8 @@ const ReservationForm = () => {
         position: "bottom-center",
         icon: <AlertCircle className="text-red-500" />,
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -448,11 +459,292 @@ const ReservationForm = () => {
                   </div>
                 </div>
 
-                {/* Additional Information */}
+                {/* Restrições e Informações de Saúde */}
                 <div>
                   <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
                     <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
                       4
+                    </span>
+                    Restrições Alimentares e de Saúde
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* Restrições Alimentares */}
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <label htmlFor="foodRestriction" className="text-sm font-medium text-neutrals-dark dark:text-white mr-3">
+                          Você possui alguma restrição alimentar?*
+                        </label>
+                        <div className="flex gap-4">
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              name="foodRestriction"
+                              checked={formData.foodRestriction}
+                              onChange={handleChange}
+                              className="sr-only"
+                            />
+                            <div
+                              className={`w-5 h-5 rounded-md border flex items-center justify-center ${
+                                formData.foodRestriction
+                                  ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
+                                  : "border-gray-300 dark:border-gray-600"
+                              }`}
+                              onClick={() => setFormData({ ...formData, foodRestriction: !formData.foodRestriction })}
+                            >
+                              {formData.foodRestriction && (
+                                <Check size={14} className="text-white dark:text-teal" />
+                              )}
+                            </div>
+                            <span className="ml-2 text-neutrals-dark dark:text-white">
+                              Sim
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                      
+                      {formData.foodRestriction && (
+                        <div className="mt-2">
+                          <label htmlFor="foodRestrictionDetails" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                            Descreva sua restrição alimentar*
+                          </label>
+                          <textarea
+                            id="foodRestrictionDetails"
+                            name="foodRestrictionDetails"
+                            value={formData.foodRestrictionDetails}
+                            onChange={handleChange}
+                            rows={3}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
+                            required={formData.foodRestriction}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Restrições de Saúde */}
+                    <div className="mt-4">
+                      <div className="flex items-center mb-2">
+                        <label htmlFor="healthRestriction" className="text-sm font-medium text-neutrals-dark dark:text-white mr-3">
+                          Você possui alguma restrição de saúde?*
+                        </label>
+                        <div className="flex gap-4">
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              name="healthRestriction"
+                              checked={formData.healthRestriction}
+                              onChange={handleChange}
+                              className="sr-only"
+                            />
+                            <div
+                              className={`w-5 h-5 rounded-md border flex items-center justify-center ${
+                                formData.healthRestriction
+                                  ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
+                                  : "border-gray-300 dark:border-gray-600"
+                              }`}
+                              onClick={() => setFormData({ ...formData, healthRestriction: !formData.healthRestriction })}
+                            >
+                              {formData.healthRestriction && (
+                                <Check size={14} className="text-white dark:text-teal" />
+                              )}
+                            </div>
+                            <span className="ml-2 text-neutrals-dark dark:text-white">
+                              Sim
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                      
+                      {formData.healthRestriction && (
+                        <div className="mt-2">
+                          <label htmlFor="healthRestrictionDetails" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                            Descreva sua restrição de saúde*
+                          </label>
+                          <textarea
+                            id="healthRestrictionDetails"
+                            name="healthRestrictionDetails"
+                            value={formData.healthRestrictionDetails}
+                            onChange={handleChange}
+                            rows={3}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
+                            required={formData.healthRestriction}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contato de Emergência */}
+                <div>
+                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
+                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
+                      5
+                    </span>
+                    Contato de Emergência
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="emergencyContactName" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                        Nome Completo*
+                      </label>
+                      <input
+                        type="text"
+                        id="emergencyContactName"
+                        name="emergencyContactName"
+                        value={formData.emergencyContactName}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="emergencyContactPhone" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                        Telefone (com código do país)*
+                      </label>
+                      <input
+                        type="tel"
+                        id="emergencyContactPhone"
+                        name="emergencyContactPhone"
+                        value={formData.emergencyContactPhone}
+                        onChange={handleChange}
+                        placeholder="Ex: +5511999999999"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="emergencyContactEmail" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                        E-mail*
+                      </label>
+                      <input
+                        type="email"
+                        id="emergencyContactEmail"
+                        name="emergencyContactEmail"
+                        value={formData.emergencyContactEmail}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="emergencyContactRelation" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                        Parentesco*
+                      </label>
+                      <input
+                        type="text"
+                        id="emergencyContactRelation"
+                        name="emergencyContactRelation"
+                        value={formData.emergencyContactRelation}
+                        onChange={handleChange}
+                        placeholder="Ex: Mãe, Pai, Irmão"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Noite Extra */}
+                <div>
+                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
+                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
+                      6
+                    </span>
+                    Noites Extras
+                  </h2>
+                  <div>
+                    <div className="flex items-center mb-4">
+                      <label htmlFor="extraNightRequired" className="text-sm font-medium text-neutrals-dark dark:text-white mr-3">
+                        Você vai precisar de noites extras?
+                      </label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            name="extraNightRequired"
+                            checked={formData.extraNightRequired}
+                            onChange={handleChange}
+                            className="sr-only"
+                          />
+                          <div
+                            className={`w-5 h-5 rounded-md border flex items-center justify-center ${
+                              formData.extraNightRequired
+                                ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
+                                : "border-gray-300 dark:border-gray-600"
+                            }`}
+                            onClick={() => setFormData({ ...formData, extraNightRequired: !formData.extraNightRequired })}
+                          >
+                            {formData.extraNightRequired && (
+                              <Check size={14} className="text-white dark:text-teal" />
+                            )}
+                          </div>
+                          <span className="ml-2 text-neutrals-dark dark:text-white">
+                            Sim
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    {formData.extraNightRequired && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                        <div>
+                          <label htmlFor="extraNightType" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                            Será antes do check-in ou depois do check-out?*
+                          </label>
+                          <select
+                            id="extraNightType"
+                            name="extraNightType"
+                            value={formData.extraNightType}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
+                            required={formData.extraNightRequired}
+                          >
+                            <option value="">Selecione uma opção</option>
+                            <option value="before">Antes do check-in</option>
+                            <option value="after">Depois do check-out</option>
+                            <option value="both">Ambos</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="extraNightQuantity" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                            Número de noites extras*
+                          </label>
+                          <input
+                            type="number"
+                            id="extraNightQuantity"
+                            name="extraNightQuantity"
+                            min="1"
+                            max="14"
+                            value={formData.extraNightQuantity}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
+                            required={formData.extraNightRequired}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label htmlFor="extraNightDates" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                            Data(s) previstas
+                          </label>
+                          <input
+                            type="text"
+                            id="extraNightDates"
+                            name="extraNightDates"
+                            value={formData.extraNightDates}
+                            onChange={handleChange}
+                            placeholder="Ex: 15/06/2025 até 17/06/2025"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Additional Information */}
+                <div>
+                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
+                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
+                      7
                     </span>
                     Informações Adicionais
                   </h2>
