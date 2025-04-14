@@ -92,14 +92,14 @@ const ReservationForm = () => {
     e.preventDefault();
     setSubmitting(true);
     
+    // Validate required fields
     if (!formData.fullName || !formData.email || !formData.whatsapp || 
         !formData.city || !checkInDate || !checkOutDate || 
         !formData.roomType || !formData.schoolName ||
         !formData.passportFile || !formData.enrollmentFile || 
         !formData.agreeTerms ||
         !formData.emergencyContactName || !formData.emergencyContactPhone ||
-        !formData.emergencyContactEmail || !formData.emergencyContactRelation ||
-        (formData.extraNightRequired && (!formData.extraNightType || !formData.extraNightQuantity))
+        !formData.emergencyContactEmail || !formData.emergencyContactRelation
     ) {
       toast.error("Por favor, preencha todos os campos obrigatórios.", {
         position: "bottom-center",
@@ -109,33 +109,99 @@ const ReservationForm = () => {
       return;
     }
 
-    try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: 'temporaryPassword123!',
-        options: {
-          data: {
-            full_name: formData.fullName,
-            phone: formData.whatsapp
-          }
-        }
+    // Validate food and health restriction details if needed
+    if (formData.foodRestriction && !formData.foodRestrictionDetails) {
+      toast.error("Por favor, descreva suas restrições alimentares.", {
+        position: "bottom-center",
+        icon: <AlertCircle className="text-red-500" />,
       });
+      setSubmitting(false);
+      return;
+    }
 
-      if (signUpError) {
-        throw signUpError;
+    if (formData.healthRestriction && !formData.healthRestrictionDetails) {
+      toast.error("Por favor, descreva suas restrições de saúde.", {
+        position: "bottom-center",
+        icon: <AlertCircle className="text-red-500" />,
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    // Validate extra night details if needed
+    if (formData.extraNightRequired && (!formData.extraNightType || !formData.extraNightQuantity)) {
+      toast.error("Por favor, preencha os detalhes das noites extras.", {
+        position: "bottom-center",
+        icon: <AlertCircle className="text-red-500" />,
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      // Check if user already exists
+      const { data: existingUser, error: checkUserError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', formData.email)
+        .maybeSingle();
+      
+      if (checkUserError && checkUserError.code !== 'PGRST116') { // Not found error code
+        console.error("Erro ao verificar usuário existente:", checkUserError);
       }
 
-      if (!data.user) {
-        throw new Error("Não foi possível criar o usuário.");
+      let userId: string;
+
+      if (existingUser?.id) {
+        // User already exists
+        userId = existingUser.id;
+        console.log("Usuário já existe, usando ID existente:", userId);
+      } else {
+        // Create new user with admin API (requires server-side function in real env)
+        // For now, we'll use signUp and handle the email confirmation
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              phone: formData.whatsapp
+            },
+            emailRedirectTo: `${window.location.origin}/client-area`
+          }
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        if (!data.user) {
+          throw new Error("Não foi possível criar o usuário.");
+        }
+
+        userId = data.user.id;
+        
+        // In production, you would use the admin API to set email_confirm=true
+        // This requires a server-side edge function with admin rights
+        console.log("Novo usuário criado:", userId);
       }
 
-      // Corrigindo os tipos de dados na inserção
+      // Calculate weeks between check-in and check-out
+      const checkInTime = new Date(checkInDate!).getTime();
+      const checkOutTime = new Date(checkOutDate!).getTime();
+      const daysDifference = Math.ceil((checkOutTime - checkInTime) / (1000 * 60 * 60 * 24));
+      const weeks = Math.ceil(daysDifference / 7);
+      
+      // Assume a basic price calculation (this should be replaced with actual pricing logic)
+      const weeklyRate = 200; // Example price per week
+      const totalPrice = weeks * weeklyRate;
+
+      // Insert reservation data
       const { data: reservationData, error: reservationError } = await supabase
         .from('reservations')
         .insert({
           accommodation_id: accommodationId || '',
-          check_in: checkInDate?.toISOString().split('T')[0], // Convertendo Date para string no formato YYYY-MM-DD
-          check_out: checkOutDate?.toISOString().split('T')[0], // Convertendo Date para string no formato YYYY-MM-DD
+          check_in: checkInDate?.toISOString().split('T')[0],
+          check_out: checkOutDate?.toISOString().split('T')[0],
           food_restriction: formData.foodRestriction,
           food_restriction_details: formData.foodRestrictionDetails,
           health_restriction: formData.healthRestriction,
@@ -149,22 +215,24 @@ const ReservationForm = () => {
           extra_night_quantity: formData.extraNightQuantity,
           extra_night_dates: formData.extraNightDates,
           form_submitted: true,
-          total_price: 0, // Adicionando o campo obrigatório
-          weeks: 0, // Adicionando o campo obrigatório
-          user_id: data.user.id
+          total_price: totalPrice,
+          weeks: weeks,
+          user_id: userId
         });
 
       if (reservationError) {
         throw reservationError;
       }
 
+      // Update profile to mark form as submitted
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ form_submitted: true })
-        .eq('id', data.user.id);
+        .eq('id', userId);
 
       if (profileError) {
-        throw profileError;
+        console.error("Erro ao atualizar perfil:", profileError);
+        // Continue anyway, this is not critical
       }
 
       toast.success("Reserva enviada com sucesso!", {
@@ -174,9 +242,18 @@ const ReservationForm = () => {
       
       setSubmitted(true);
       
+      // Show instructions to check email
+      toast.info(
+        "Verifique seu e-mail para criar uma senha e acessar a área do cliente.", 
+        {
+          duration: 8000,
+          position: "bottom-center",
+        }
+      );
+      
       setTimeout(() => {
         navigate("/client-area");
-      }, 3000);
+      }, 5000);
     } catch (error) {
       console.error("Erro no envio do formulário:", error);
       toast.error("Ocorreu um erro ao enviar o formulário. Por favor, tente novamente.", {

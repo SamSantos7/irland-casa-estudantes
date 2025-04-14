@@ -1,24 +1,42 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { CheckCircle2, Mail, AlertCircle } from "lucide-react";
 
 const ClientArea = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [user, setUser] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data, error } = await supabase.auth.getSession();
       
-      if (error || !data.session) {
-        toast.error("Por favor, faça login para acessar esta página");
-        navigate('/');
+      if (error) {
+        console.error("Error checking session:", error);
+        setLoading(false);
+        setShowLoginForm(true);
         return;
       }
+      
+      if (!data.session) {
+        setShowLoginForm(true);
+        setLoading(false);
+        return;
+      }
+      
+      setUser(data.session.user);
       
       // Verifica se o usuário completou o formulário
       const { data: profileData, error: profileError } = await supabase
@@ -37,7 +55,7 @@ const ClientArea = () => {
       
       if (!profileData?.form_submitted) {
         toast.error("Você precisa preencher o formulário de reserva primeiro");
-        setTimeout(() => navigate('/'), 3000);
+        setTimeout(() => navigate('/reservation-form'), 3000);
       }
       
       setLoading(false);
@@ -45,6 +63,62 @@ const ClientArea = () => {
     
     checkAuth();
   }, [navigate]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Login realizado com sucesso!");
+      setShowLoginForm(false);
+      // Reload page to update auth state
+      window.location.reload();
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
+      if (error.message.includes("Email not confirmed")) {
+        toast.error("Você ainda não criou sua senha. Verifique seu e-mail para ativar sua conta e acessar a área do cliente.", {
+          duration: 6000,
+        });
+      } else if (error.message.includes("Invalid login credentials")) {
+        toast.error("E-mail ou senha inválidos. Tente novamente.");
+      } else {
+        toast.error("Erro ao fazer login. Tente novamente mais tarde.");
+      }
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      toast.error("Por favor, digite seu e-mail para redefinir sua senha.");
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/client-area`,
+      });
+      
+      if (error) throw error;
+      
+      toast.success("Enviamos um e-mail para redefinir sua senha. Verifique sua caixa de entrada.", {
+        duration: 6000,
+      });
+    } catch (error) {
+      console.error("Erro ao solicitar redefinição de senha:", error);
+      toast.error("Erro ao solicitar redefinição de senha. Tente novamente mais tarde.");
+    }
+  };
   
   if (loading) {
     return (
@@ -58,6 +132,89 @@ const ClientArea = () => {
     );
   }
   
+  if (showLoginForm) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center pt-24">
+          <div className="container py-16 text-center">
+            <div className="mx-auto max-w-md bg-white dark:bg-neutrals-dark rounded-2xl p-8 shadow-md">
+              <h1 className="text-2xl font-bold text-neutrals-dark dark:text-white mb-4">
+                Acesso à Área do Cliente
+              </h1>
+              
+              <form onSubmit={handleLogin} className="space-y-4 text-left">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                    E-mail
+                  </label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    required
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
+                    Senha
+                  </label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Sua senha"
+                    required
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <Button
+                    type="submit"
+                    disabled={loginLoading}
+                    className="w-full bg-teal dark:bg-teal-light text-white dark:text-teal hover:bg-opacity-90 dark:hover:bg-opacity-90"
+                  >
+                    {loginLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        <span>Entrando...</span>
+                      </>
+                    ) : (
+                      "Entrar"
+                    )}
+                  </Button>
+                </div>
+              </form>
+              
+              <div className="mt-4 text-center">
+                <button
+                  onClick={handlePasswordReset}
+                  className="text-sm text-teal dark:text-teal-light hover:underline focus:outline-none"
+                >
+                  Esqueceu sua senha?
+                </button>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-center text-sm text-muted-foreground">
+                  <Mail className="w-5 h-5 mr-2" />
+                  <span>Ainda não criou sua senha? Verifique seu e-mail para ativar sua conta.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!formSubmitted) {
     return (
       <div className="min-h-screen flex flex-col">
