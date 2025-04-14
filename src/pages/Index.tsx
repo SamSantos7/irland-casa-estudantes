@@ -346,7 +346,7 @@ const Index = () => {
       </section>
 
       <Footer />
-      <WhatsAppButton phoneNumber="353000000000" showOptions={true} fixed={true} />
+      <WhatsAppButton phoneNumber="5521970286372" showOptions={true} fixed={true} />
     </div>
   );
 };
