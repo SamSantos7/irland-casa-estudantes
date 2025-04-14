@@ -131,12 +131,13 @@ const ReservationForm = () => {
         throw new Error("Não foi possível criar o usuário.");
       }
 
+      // Corrigindo os tipos de dados na inserção
       const { data: reservationData, error: reservationError } = await supabase
         .from('reservations')
-        .insert([{
-          accommodation_id: accommodationId,
-          check_in: checkInDate,
-          check_out: checkOutDate,
+        .insert({
+          accommodation_id: accommodationId || '',
+          check_in: checkInDate?.toISOString().split('T')[0], // Convertendo Date para string no formato YYYY-MM-DD
+          check_out: checkOutDate?.toISOString().split('T')[0], // Convertendo Date para string no formato YYYY-MM-DD
           food_restriction: formData.foodRestriction,
           food_restriction_details: formData.foodRestrictionDetails,
           health_restriction: formData.healthRestriction,
@@ -150,10 +151,10 @@ const ReservationForm = () => {
           extra_night_quantity: formData.extraNightQuantity,
           extra_night_dates: formData.extraNightDates,
           form_submitted: true,
-          total_price: 0,
-          weeks: 0,
+          total_price: 0, // Adicionando o campo obrigatório
+          weeks: 0, // Adicionando o campo obrigatório
           user_id: data.user.id
-        }]);
+        });
 
       if (reservationError) {
         throw reservationError;
