@@ -19,7 +19,7 @@ serve(async (req) => {
     if (!RESEND_API_KEY) {
       console.error("RESEND_API_KEY is not set");
       return new Response(
-        JSON.stringify({ error: "Missing API key" }),
+        JSON.stringify({ error: "Chave de API ausente" }),
         { 
           status: 500, 
           headers: { ...corsHeaders, "Content-Type": "application/json" } 
@@ -30,7 +30,7 @@ serve(async (req) => {
     const resend = new Resend(RESEND_API_KEY);
     const { event, user } = await req.json();
 
-    console.log("Received event:", event, "for user:", user.email);
+    console.log("Evento recebido:", event, "para usuário:", user.email);
 
     if (event === "user.created") {
       const resetLink = `${req.headers.get("origin") || "https://irland-casa-estudantes.lovable.app"}/client-area`;
