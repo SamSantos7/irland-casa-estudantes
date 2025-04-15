@@ -1,1027 +1,403 @@
-
-import { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import WhatsAppButton from "../components/WhatsAppButton";
-import { WeekendDatepicker } from "../components/WeekendDatepicker";
-import { 
-  Upload, 
-  Check, 
-  CheckCircle2,
-  AlertCircle
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/DatePicker";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const ReservationForm = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const accommodationId = searchParams.get("accommodation");
-  
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    whatsapp: "",
-    city: accommodationId ? "" : "dublin",
-    roomType: accommodationId ? "" : "individual",
-    schoolName: "",
-    passportFile: null as File | null,
-    enrollmentFile: null as File | null,
-    paymentCurrency: "eur",
-    comments: "",
-    agreeTerms: false,
-    foodRestriction: false,
-    foodRestrictionDetails: "",
-    healthRestriction: false,
-    healthRestrictionDetails: "",
-    emergencyContactName: "",
-    emergencyContactPhone: "",
-    emergencyContactEmail: "",
-    emergencyContactRelation: "",
-    extraNightRequired: false,
-    extraNightType: "",
-    extraNightQuantity: 0,
-    extraNightDates: "",
-  });
-
-  const [checkInDate, setCheckInDate] = useState<Date | undefined>(undefined);
-  const [checkOutDate, setCheckOutDate] = useState<Date | undefined>(undefined);
-  const [passportFileName, setPassportFileName] = useState("");
-  const [enrollmentFileName, setEnrollmentFileName] = useState("");
+  const [accommodations, setAccommodations] = useState([]);
+  const [selectedAccommodation, setSelectedAccommodation] = useState("");
+  const [checkIn, setCheckIn] = useState<Date | undefined>();
+  const [checkOut, setCheckOut] = useState<Date | undefined>();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [hasFoodRestrictions, setHasFoodRestrictions] = useState(false);
+  const [foodRestrictionDetails, setFoodRestrictionDetails] = useState("");
+  const [hasHealthRestrictions, setHasHealthRestrictions] = useState(false);
+  const [healthRestrictionDetails, setHealthRestrictionDetails] = useState("");
+  const [emergencyContactName, setEmergencyContactName] = useState("");
+  const [emergencyContactRelationship, setEmergencyContactRelationship] = useState("");
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState("");
+  const [emergencyContactEmail, setEmergencyContactEmail] = useState("");
+  const [extraNightRequired, setExtraNightRequired] = useState(false);
+  const [extraNightType, setExtraNightType] = useState("before");
+  const [extraNightQuantity, setExtraNightQuantity] = useState(1);
+  const [extraNightDates, setExtraNightDates] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    
-    if (type === "checkbox") {
-      const target = e.target as HTMLInputElement;
-      setFormData({
-        ...formData,
-        [name]: target.checked,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
-  };
+  useEffect(() => {
+    const fetchAccommodations = async () => {
+      const { data, error } = await supabase
+        .from('accommodations')
+        .select('*');
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: "passport" | "enrollment") => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      if (fileType === "passport") {
-        setFormData({
-          ...formData,
-          passportFile: files[0],
-        });
-        setPassportFileName(files[0].name);
+      if (error) {
+        console.error("Error fetching accommodations:", error);
+        toast.error("Erro ao carregar acomodações.");
       } else {
-        setFormData({
-          ...formData,
-          enrollmentFile: files[0],
-        });
-        setEnrollmentFileName(files[0].name);
+        setAccommodations(data);
       }
-    }
-  };
+    };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    fetchAccommodations();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    
-    // Validate required fields
-    if (!formData.fullName || !formData.email || !formData.whatsapp || 
-        !formData.city || !checkInDate || !checkOutDate || 
-        !formData.roomType || !formData.schoolName ||
-        !formData.passportFile || !formData.enrollmentFile || 
-        !formData.agreeTerms ||
-        !formData.emergencyContactName || !formData.emergencyContactPhone ||
-        !formData.emergencyContactEmail || !formData.emergencyContactRelation
-    ) {
-      toast.error("Por favor, preencha todos os campos obrigatórios.", {
-        position: "bottom-center",
-        icon: <AlertCircle className="text-red-500" />,
-      });
-      setSubmitting(false);
-      return;
-    }
-
-    // Validate food and health restriction details if needed
-    if (formData.foodRestriction && !formData.foodRestrictionDetails) {
-      toast.error("Por favor, descreva suas restrições alimentares.", {
-        position: "bottom-center",
-        icon: <AlertCircle className="text-red-500" />,
-      });
-      setSubmitting(false);
-      return;
-    }
-
-    if (formData.healthRestriction && !formData.healthRestrictionDetails) {
-      toast.error("Por favor, descreva suas restrições de saúde.", {
-        position: "bottom-center",
-        icon: <AlertCircle className="text-red-500" />,
-      });
-      setSubmitting(false);
-      return;
-    }
-
-    // Validate extra night details if needed
-    if (formData.extraNightRequired && (!formData.extraNightType || !formData.extraNightQuantity)) {
-      toast.error("Por favor, preencha os detalhes das noites extras.", {
-        position: "bottom-center",
-        icon: <AlertCircle className="text-red-500" />,
-      });
-      setSubmitting(false);
-      return;
-    }
 
     try {
-      // Check if user already exists
-      const { data: existingUser, error: checkUserError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', formData.email)
-        .maybeSingle();
-      
-      if (checkUserError && checkUserError.code !== 'PGRST116') { // Not found error code
-        console.error("Erro ao verificar usuário existente:", checkUserError);
+      // Check if required fields are filled
+      if (!firstName || !lastName || !email || !phone || !nationality || !selectedAccommodation) {
+        toast.error("Por favor, preencha todos os campos obrigatórios");
+        setSubmitting(false);
+        return;
       }
 
-      let userId: string;
+      // Form data for the reservation
+      const reservationData = {
+        accommodation_id: selectedAccommodation,
+        check_in: checkIn.toISOString(),
+        check_out: checkOut.toISOString(),
+        food_restriction: hasFoodRestrictions,
+        food_restriction_details: foodRestrictionDetails,
+        health_restriction: hasHealthRestrictions,
+        health_restriction_details: healthRestrictionDetails,
+        emergency_contact_name: emergencyContactName,
+        emergency_contact_relation: emergencyContactRelationship,
+        emergency_contact_phone: emergencyContactPhone,
+        emergency_contact_email: emergencyContactEmail,
+        extra_night_required: extraNightRequired,
+        extra_night_type: extraNightType,
+        extra_night_quantity: extraNightQuantity,
+        extra_night_dates: extraNightDates,
+        total_price: calculatePrice(),
+        weeks: calculateWeeks(),
+        form_submitted: true
+      };
 
-      if (existingUser?.id) {
-        // User already exists
+      // Create user profile data
+      const userProfile = {
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone,
+        nationality: nationality,
+        form_submitted: true
+      };
+
+      // First check if user already exists
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', phone)
+        .single();
+
+      let userId;
+
+      if (existingUser) {
         userId = existingUser.id;
-        console.log("Usuário já existe, usando ID existente:", userId);
+        
+        // Update existing profile
+        await supabase
+          .from('profiles')
+          .update(userProfile)
+          .eq('id', userId);
       } else {
-        // Create new user with admin API (requires server-side function in real env)
-        // For now, we'll use signUp and handle the email confirmation
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email: formData.email,
+        // Create new user in Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: email,
+          password: Math.random().toString(36).slice(-10) + Math.random().toString(36).toUpperCase().slice(-2) + Math.random().toString(36).slice(-2),
           options: {
             data: {
-              full_name: formData.fullName,
-              phone: formData.whatsapp
+              full_name: `${firstName} ${lastName}`,
+              phone: phone
             },
             emailRedirectTo: `${window.location.origin}/client-area`
           }
         });
 
-        if (signUpError) {
-          throw signUpError;
+        if (authError) {
+          throw new Error(authError.message);
         }
 
-        if (!data.user) {
-          throw new Error("Não foi possível criar o usuário.");
-        }
-
-        userId = data.user.id;
-        
-        // In production, you would use the admin API to set email_confirm=true
-        // This requires a server-side edge function with admin rights
-        console.log("Novo usuário criado:", userId);
+        userId = authData.user.id;
       }
 
-      // Calculate weeks between check-in and check-out
-      const checkInTime = new Date(checkInDate!).getTime();
-      const checkOutTime = new Date(checkOutDate!).getTime();
-      const daysDifference = Math.ceil((checkOutTime - checkInTime) / (1000 * 60 * 60 * 24));
-      const weeks = Math.ceil(daysDifference / 7);
-      
-      // Assume a basic price calculation (this should be replaced with actual pricing logic)
-      const weeklyRate = 200; // Example price per week
-      const totalPrice = weeks * weeklyRate;
-
-      // Insert reservation data
-      const { data: reservationData, error: reservationError } = await supabase
+      // Insert the reservation with user_id
+      const { error: reservationError } = await supabase
         .from('reservations')
         .insert({
-          accommodation_id: accommodationId || '',
-          check_in: checkInDate?.toISOString().split('T')[0],
-          check_out: checkOutDate?.toISOString().split('T')[0],
-          food_restriction: formData.foodRestriction,
-          food_restriction_details: formData.foodRestrictionDetails,
-          health_restriction: formData.healthRestriction,
-          health_restriction_details: formData.healthRestrictionDetails,
-          emergency_contact_name: formData.emergencyContactName,
-          emergency_contact_phone: formData.emergencyContactPhone,
-          emergency_contact_email: formData.emergencyContactEmail,
-          emergency_contact_relation: formData.emergencyContactRelation,
-          extra_night_required: formData.extraNightRequired,
-          extra_night_type: formData.extraNightType,
-          extra_night_quantity: formData.extraNightQuantity,
-          extra_night_dates: formData.extraNightDates,
-          form_submitted: true,
-          total_price: totalPrice,
-          weeks: weeks,
+          ...reservationData,
           user_id: userId
         });
 
       if (reservationError) {
-        throw reservationError;
+        throw new Error(reservationError.message);
       }
 
-      // Update profile to mark form as submitted
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ form_submitted: true })
-        .eq('id', userId);
-
-      if (profileError) {
-        console.error("Erro ao atualizar perfil:", profileError);
-        // Continue anyway, this is not critical
-      }
-
-      toast.success("Reserva enviada com sucesso!", {
-        position: "bottom-center",
-        icon: <CheckCircle2 className="text-green-500" />,
-      });
-      
-      setSubmitted(true);
-      
-      // Show instructions to check email
-      toast.info(
-        "Verifique seu e-mail para criar uma senha e acessar a área do cliente.", 
-        {
-          duration: 8000,
-          position: "bottom-center",
-        }
-      );
-      
+      toast.success("Reserva enviada com sucesso!");
       setTimeout(() => {
         navigate("/client-area");
-      }, 5000);
+      }, 2000);
     } catch (error) {
-      console.error("Erro no envio do formulário:", error);
-      toast.error("Ocorreu um erro ao enviar o formulário. Por favor, tente novamente.", {
-        position: "bottom-center",
-        icon: <AlertCircle className="text-red-500" />,
-      });
+      console.error("Error submitting form:", error);
+      toast.error(`Erro ao enviar formulário: ${error.message}`);
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-grow flex items-center justify-center pt-24">
-          <div className="container py-16 text-center">
-            <div className="mx-auto max-w-lg bg-white dark:bg-neutrals-dark rounded-2xl p-8 shadow-md">
-              <div className="flex justify-center mb-6">
-                <div className="h-20 w-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                  <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-              <h1 className="text-2xl font-bold text-neutrals-dark dark:text-white mb-4">
-                Reserva Enviada com Sucesso!
-              </h1>
-              <p className="text-muted-foreground mb-6">
-                Recebemos sua solicitação. Em até 24 horas, você receberá um e-mail com as próximas etapas 
-                para confirmar sua reserva.
-              </p>
-              <p className="text-muted-foreground mb-8">
-                Para qualquer dúvida, entre em contato pelo nosso WhatsApp.
-              </p>
-              <a
-                href="/"
-                className="inline-block bg-teal dark:bg-teal-light text-white dark:text-teal px-6 py-3 rounded-lg hover:bg-opacity-90 dark:hover:bg-opacity-90 transition"
-              >
-                Voltar para a Página Inicial
-              </a>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  // Calculate price based on selected accommodation and weeks
+  const calculatePrice = () => {
+    if (!selectedAccommodation || !accommodations) return 0;
+    
+    const accommodation = accommodations.find(acc => acc.id === selectedAccommodation);
+    if (!accommodation) return 0;
+    
+    const weeks = calculateWeeks();
+    return accommodation.price_per_week * weeks;
+  };
+
+  // Calculate weeks between check-in and check-out dates
+  const calculateWeeks = () => {
+    if (!checkIn || !checkOut) return 0;
+    
+    const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.ceil(diffDays / 7);
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-
-      <main className="flex-grow pt-24">
-        <div className="container py-8">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-2xl md:text-3xl font-bold text-neutrals-dark dark:text-white mb-2">
-              Solicitar Reserva
-            </h1>
-            <p className="text-muted-foreground mb-8">
-              Preencha o formulário abaixo para solicitar sua reserva. Nossa equipe entrará em contato
-              em até 24 horas para confirmar disponibilidade.
-            </p>
-
-            <div className="bg-white dark:bg-neutrals-dark rounded-2xl p-6 md:p-8 shadow-md">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Personal Information */}
-                <div>
-                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
-                      1
-                    </span>
-                    Informações Pessoais
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="fullName" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Nome Completo*
-                      </label>
-                      <input
-                        type="text"
-                        id="fullName"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        E-mail*
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="whatsapp" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        WhatsApp (com código do país)*
-                      </label>
-                      <input
-                        type="tel"
-                        id="whatsapp"
-                        name="whatsapp"
-                        value={formData.whatsapp}
-                        onChange={handleChange}
-                        placeholder="Ex: +5511999999999"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Accommodation Details */}
-                <div>
-                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
-                      2
-                    </span>
-                    Detalhes da Acomodação
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="city" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Cidade*
-                      </label>
-                      <select
-                        id="city"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      >
-                        <option value="">Selecione uma cidade</option>
-                        <option value="dublin">Dublin</option>
-                        <option value="cork">Cork</option>
-                        <option value="galway">Galway</option>
-                        <option value="limerick">Limerick</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="roomType" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Tipo de Quarto*
-                      </label>
-                      <select
-                        id="roomType"
-                        name="roomType"
-                        value={formData.roomType}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      >
-                        <option value="">Selecione um tipo</option>
-                        <option value="individual">Quarto Individual</option>
-                        <option value="shared">Quarto Compartilhado</option>
-                        <option value="double">Quarto de Casal</option>
-                      </select>
-                    </div>
-                    
-                    <WeekendDatepicker
-                      date={checkInDate}
-                      onDateChange={setCheckInDate}
-                      label="Check-in (Apenas Sáb/Dom)*"
-                      placeholder="Selecione uma data"
-                    />
-                    
-                    <WeekendDatepicker
-                      date={checkOutDate}
-                      onDateChange={setCheckOutDate}
-                      label="Check-out (Apenas Sáb/Dom)*"
-                      placeholder="Selecione uma data"
-                    />
-                    
-                    <div className="md:col-span-2">
-                      <label htmlFor="schoolName" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Nome da Escola*
-                      </label>
-                      <input
-                        type="text"
-                        id="schoolName"
-                        name="schoolName"
-                        value={formData.schoolName}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Documents */}
-                <div>
-                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
-                      3
-                    </span>
-                    Documentos
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-neutrals-dark dark:text-white mb-2">
-                        Passaporte*
-                      </label>
-                      <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center">
-                        <input
-                          type="file"
-                          id="passportFile"
-                          name="passportFile"
-                          onChange={(e) => handleFileChange(e, "passport")}
-                          className="sr-only"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          required
-                        />
-                        <label
-                          htmlFor="passportFile"
-                          className="cursor-pointer flex flex-col items-center justify-center py-4"
-                        >
-                          <Upload className="h-10 w-10 text-teal dark:text-teal-light mb-2" />
-                          {passportFileName ? (
-                            <span className="text-sm text-neutrals-dark dark:text-white break-all">
-                              {passportFileName}
-                            </span>
-                          ) : (
-                            <>
-                              <span className="text-sm font-medium text-teal dark:text-teal-light">
-                                Clique para fazer upload
-                              </span>
-                              <span className="text-xs text-muted-foreground mt-1">
-                                PDF, JPG, PNG (máx. 10MB)
-                              </span>
-                            </>
-                          )}
-                        </label>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-neutrals-dark dark:text-white mb-2">
-                        Comprovante de Matrícula*
-                      </label>
-                      <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center">
-                        <input
-                          type="file"
-                          id="enrollmentFile"
-                          name="enrollmentFile"
-                          onChange={(e) => handleFileChange(e, "enrollment")}
-                          className="sr-only"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          required
-                        />
-                        <label
-                          htmlFor="enrollmentFile"
-                          className="cursor-pointer flex flex-col items-center justify-center py-4"
-                        >
-                          <Upload className="h-10 w-10 text-teal dark:text-teal-light mb-2" />
-                          {enrollmentFileName ? (
-                            <span className="text-sm text-neutrals-dark dark:text-white break-all">
-                              {enrollmentFileName}
-                            </span>
-                          ) : (
-                            <>
-                              <span className="text-sm font-medium text-teal dark:text-teal-light">
-                                Clique para fazer upload
-                              </span>
-                              <span className="text-xs text-muted-foreground mt-1">
-                                PDF, JPG, PNG (máx. 10MB)
-                              </span>
-                            </>
-                          )}
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Restrições e Informações de Saúde */}
-                <div>
-                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
-                      4
-                    </span>
-                    Restrições Alimentares e de Saúde
-                  </h2>
-                  <div className="grid grid-cols-1 gap-4">
-                    {/* Restrições Alimentares */}
-                    <div>
-                      <div className="flex items-center mb-2">
-                        <label htmlFor="foodRestriction" className="text-sm font-medium text-neutrals-dark dark:text-white mr-3">
-                          Você possui alguma restrição alimentar?
-                        </label>
-                        <div className="flex gap-4">
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              name="foodRestriction"
-                              checked={formData.foodRestriction}
-                              onChange={handleChange}
-                              className="sr-only"
-                            />
-                            <div
-                              className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                                formData.foodRestriction
-                                  ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
-                                  : "border-gray-300 dark:border-gray-600"
-                              }`}
-                              onClick={() => setFormData({ ...formData, foodRestriction: !formData.foodRestriction })}
-                            >
-                              {formData.foodRestriction && (
-                                <Check size={14} className="text-white dark:text-teal" />
-                              )}
-                            </div>
-                            <span className="ml-2 text-neutrals-dark dark:text-white">
-                              Sim
-                            </span>
-                          </label>
-                          <label className="flex items-center">
-                            <div
-                              className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                                !formData.foodRestriction
-                                  ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
-                                  : "border-gray-300 dark:border-gray-600"
-                              }`}
-                              onClick={() => setFormData({ ...formData, foodRestriction: false, foodRestrictionDetails: "" })}
-                            >
-                              {!formData.foodRestriction && (
-                                <Check size={14} className="text-white dark:text-teal" />
-                              )}
-                            </div>
-                            <span className="ml-2 text-neutrals-dark dark:text-white">
-                              Não
-                            </span>
-                          </label>
-                        </div>
-                      </div>
-                      
-                      {formData.foodRestriction && (
-                        <div className="mt-2">
-                          <label htmlFor="foodRestrictionDetails" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                            Descreva sua restrição alimentar*
-                          </label>
-                          <textarea
-                            id="foodRestrictionDetails"
-                            name="foodRestrictionDetails"
-                            value={formData.foodRestrictionDetails}
-                            onChange={handleChange}
-                            rows={3}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                            required={formData.foodRestriction}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Restrições de Saúde */}
-                    <div className="mt-4">
-                      <div className="flex items-center mb-2">
-                        <label htmlFor="healthRestriction" className="text-sm font-medium text-neutrals-dark dark:text-white mr-3">
-                          Você possui alguma restrição de saúde?
-                        </label>
-                        <div className="flex gap-4">
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              name="healthRestriction"
-                              checked={formData.healthRestriction}
-                              onChange={handleChange}
-                              className="sr-only"
-                            />
-                            <div
-                              className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                                formData.healthRestriction
-                                  ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
-                                  : "border-gray-300 dark:border-gray-600"
-                              }`}
-                              onClick={() => setFormData({ ...formData, healthRestriction: !formData.healthRestriction })}
-                            >
-                              {formData.healthRestriction && (
-                                <Check size={14} className="text-white dark:text-teal" />
-                              )}
-                            </div>
-                            <span className="ml-2 text-neutrals-dark dark:text-white">
-                              Sim
-                            </span>
-                          </label>
-                          <label className="flex items-center">
-                            <div
-                              className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                                !formData.healthRestriction
-                                  ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
-                                  : "border-gray-300 dark:border-gray-600"
-                              }`}
-                              onClick={() => setFormData({ ...formData, healthRestriction: false, healthRestrictionDetails: "" })}
-                            >
-                              {!formData.healthRestriction && (
-                                <Check size={14} className="text-white dark:text-teal" />
-                              )}
-                            </div>
-                            <span className="ml-2 text-neutrals-dark dark:text-white">
-                              Não
-                            </span>
-                          </label>
-                        </div>
-                      </div>
-                      
-                      {formData.healthRestriction && (
-                        <div className="mt-2">
-                          <label htmlFor="healthRestrictionDetails" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                            Descreva sua restrição de saúde*
-                          </label>
-                          <textarea
-                            id="healthRestrictionDetails"
-                            name="healthRestrictionDetails"
-                            value={formData.healthRestrictionDetails}
-                            onChange={handleChange}
-                            rows={3}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                            required={formData.healthRestriction}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contato de Emergência */}
-                <div>
-                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
-                      5
-                    </span>
-                    Contato de Emergência
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="emergencyContactName" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Nome Completo*
-                      </label>
-                      <input
-                        type="text"
-                        id="emergencyContactName"
-                        name="emergencyContactName"
-                        value={formData.emergencyContactName}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="emergencyContactPhone" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Telefone (com código do país)*
-                      </label>
-                      <input
-                        type="tel"
-                        id="emergencyContactPhone"
-                        name="emergencyContactPhone"
-                        value={formData.emergencyContactPhone}
-                        onChange={handleChange}
-                        placeholder="Ex: +5511999999999"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="emergencyContactEmail" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        E-mail*
-                      </label>
-                      <input
-                        type="email"
-                        id="emergencyContactEmail"
-                        name="emergencyContactEmail"
-                        value={formData.emergencyContactEmail}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="emergencyContactRelation" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Parentesco*
-                      </label>
-                      <input
-                        type="text"
-                        id="emergencyContactRelation"
-                        name="emergencyContactRelation"
-                        value={formData.emergencyContactRelation}
-                        onChange={handleChange}
-                        placeholder="Ex: Mãe, Pai, Irmão"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Noite Extra */}
-                <div>
-                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
-                      6
-                    </span>
-                    Noites Extras
-                  </h2>
-                  <div>
-                    <div className="flex items-center mb-4">
-                      <label htmlFor="extraNightRequired" className="text-sm font-medium text-neutrals-dark dark:text-white mr-3">
-                        Você vai precisar de noites extras?
-                      </label>
-                      <div className="flex gap-4">
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            name="extraNightRequired"
-                            checked={formData.extraNightRequired}
-                            onChange={handleChange}
-                            className="sr-only"
-                          />
-                          <div
-                            className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                              formData.extraNightRequired
-                                ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
-                                : "border-gray-300 dark:border-gray-600"
-                            }`}
-                            onClick={() => setFormData({ ...formData, extraNightRequired: !formData.extraNightRequired })}
-                          >
-                            {formData.extraNightRequired && (
-                              <Check size={14} className="text-white dark:text-teal" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-neutrals-dark dark:text-white">
-                            Sim
-                          </span>
-                        </label>
-                        <label className="flex items-center">
-                          <div
-                            className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                              !formData.extraNightRequired
-                                ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
-                                : "border-gray-300 dark:border-gray-600"
-                            }`}
-                            onClick={() => setFormData({ 
-                              ...formData, 
-                              extraNightRequired: false, 
-                              extraNightType: "",
-                              extraNightQuantity: 0,
-                              extraNightDates: ""
-                            })}
-                          >
-                            {!formData.extraNightRequired && (
-                              <Check size={14} className="text-white dark:text-teal" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-neutrals-dark dark:text-white">
-                            Não
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-                    
-                    {formData.extraNightRequired && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        <div>
-                          <label htmlFor="extraNightType" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                            Será antes do check-in ou depois do check-out?*
-                          </label>
-                          <select
-                            id="extraNightType"
-                            name="extraNightType"
-                            value={formData.extraNightType}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                            required={formData.extraNightRequired}
-                          >
-                            <option value="">Selecione uma opção</option>
-                            <option value="before">Antes do check-in</option>
-                            <option value="after">Depois do check-out</option>
-                            <option value="both">Ambos</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label htmlFor="extraNightQuantity" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                            Número de noites extras*
-                          </label>
-                          <input
-                            type="number"
-                            id="extraNightQuantity"
-                            name="extraNightQuantity"
-                            min="1"
-                            max="14"
-                            value={formData.extraNightQuantity}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                            required={formData.extraNightRequired}
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label htmlFor="extraNightDates" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                            Data(s) previstas
-                          </label>
-                          <input
-                            type="text"
-                            id="extraNightDates"
-                            name="extraNightDates"
-                            value={formData.extraNightDates}
-                            onChange={handleChange}
-                            placeholder="Ex: 15/06/2025 até 17/06/2025"
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Additional Information */}
-                <div>
-                  <h2 className="text-xl font-semibold text-neutrals-dark dark:text-white mb-4 flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-teal dark:bg-teal-light text-white dark:text-teal flex items-center justify-center text-sm mr-2">
-                      7
-                    </span>
-                    Informações Adicionais
-                  </h2>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label htmlFor="paymentCurrency" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Moeda de Pagamento Preferida*
-                      </label>
-                      <div className="flex gap-4">
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="paymentCurrency"
-                            value="eur"
-                            checked={formData.paymentCurrency === "eur"}
-                            onChange={handleChange}
-                            className="sr-only"
-                          />
-                          <div
-                            className={`w-5 h-5 rounded-full border flex items-center justify-center mr-2 ${
-                              formData.paymentCurrency === "eur"
-                                ? "border-teal dark:border-teal-light"
-                                : "border-gray-300 dark:border-gray-600"
-                            }`}
-                          >
-                            {formData.paymentCurrency === "eur" && (
-                              <div className="w-3 h-3 bg-teal dark:bg-teal-light rounded-full"></div>
-                            )}
-                          </div>
-                          <span className="text-neutrals-dark dark:text-white">Euro (€)</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="paymentCurrency"
-                            value="brl"
-                            checked={formData.paymentCurrency === "brl"}
-                            onChange={handleChange}
-                            className="sr-only"
-                          />
-                          <div
-                            className={`w-5 h-5 rounded-full border flex items-center justify-center mr-2 ${
-                              formData.paymentCurrency === "brl"
-                                ? "border-teal dark:border-teal-light"
-                                : "border-gray-300 dark:border-gray-600"
-                            }`}
-                          >
-                            {formData.paymentCurrency === "brl" && (
-                              <div className="w-3 h-3 bg-teal dark:bg-teal-light rounded-full"></div>
-                            )}
-                          </div>
-                          <span className="text-neutrals-dark dark:text-white">Real (R$)</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div>
-                      <label htmlFor="comments" className="block text-sm font-medium text-neutrals-dark dark:text-white mb-1">
-                        Observações (opcional)
-                      </label>
-                      <textarea
-                        id="comments"
-                        name="comments"
-                        value={formData.comments}
-                        onChange={handleChange}
-                        rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-neutrals-dark text-neutrals-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-teal dark:focus:ring-teal-light"
-                        placeholder="Informe detalhes adicionais ou preferências específicas..."
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Terms */}
-                <div className="pt-4">
-                  <label className="flex items-start">
-                    <div className="flex items-center h-5 mt-0.5">
-                      <input
-                        type="checkbox"
-                        name="agreeTerms"
-                        checked={formData.agreeTerms}
-                        onChange={handleChange}
-                        className="sr-only"
-                        required
-                      />
-                      <div
-                        className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                          formData.agreeTerms
-                            ? "bg-teal dark:bg-teal-light border-teal dark:border-teal-light"
-                            : "border-gray-300 dark:border-gray-600"
-                        }`}
-                        onClick={() => setFormData({ ...formData, agreeTerms: !formData.agreeTerms })}
-                      >
-                        {formData.agreeTerms && (
-                          <Check size={14} className="text-white dark:text-teal" />
-                        )}
-                      </div>
-                    </div>
-                    <span className="ml-3 text-sm text-neutrals-dark dark:text-white">
-                      Li e concordo com os{" "}
-                      <a 
-                        href="/terms" 
-                        className="text-teal dark:text-teal-light hover:underline"
-                      >
-                        Termos de Uso
-                      </a>{" "}
-                      e{" "}
-                      <a 
-                        href="/privacy" 
-                        className="text-teal dark:text-teal-light hover:underline"
-                      >
-                        Política de Privacidade
-                      </a>
-                      .*
-                    </span>
-                  </label>
-                </div>
-
-                {/* Submit Button */}
-                <div className="pt-4">
-                  <button
-                    type="submit"
-                    className={`w-full bg-teal dark:bg-teal-light text-white dark:text-teal font-medium py-3 px-4 rounded-lg transition btn-hover-effect flex items-center justify-center ${
-                      submitting ? "opacity-75 cursor-not-allowed" : "hover:bg-opacity-90 dark:hover:bg-opacity-90"
-                    }`}
-                    disabled={submitting}
-                  >
-                    {submitting ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                        <span>Processando...</span>
-                      </>
-                    ) : (
-                      "Enviar Reserva"
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+    <div className="container mx-auto py-8">
+      <h1 className="text-2xl font-bold mb-4">Formulário de Reserva</h1>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Informações Pessoais */}
+        <div>
+          <Label htmlFor="firstName">Nome</Label>
+          <Input
+            type="text"
+            id="firstName"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+          />
         </div>
-      </main>
+        <div>
+          <Label htmlFor="lastName">Sobrenome</Label>
+          <Input
+            type="text"
+            id="lastName"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="phone">Telefone</Label>
+          <Input
+            type="tel"
+            id="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="nationality">Nacionalidade</Label>
+          <Input
+            type="text"
+            id="nationality"
+            value={nationality}
+            onChange={(e) => setNationality(e.target.value)}
+            required
+          />
+        </div>
 
-      <Footer />
-      <WhatsAppButton phoneNumber="5521970286372" message="Olá! Tenho dúvidas sobre como fazer uma reserva." />
+        {/* Informações da Reserva */}
+        <div>
+          <Label htmlFor="accommodation">Acomodação</Label>
+          <Select onValueChange={setSelectedAccommodation}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione a acomodação" />
+            </SelectTrigger>
+            <SelectContent>
+              {accommodations.map((accommodation) => (
+                <SelectItem key={accommodation.id} value={String(accommodation.id)}>
+                  {accommodation.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Check-in</Label>
+          <DatePicker date={checkIn} setDate={setCheckIn} />
+        </div>
+        <div>
+          <Label>Check-out</Label>
+          <DatePicker date={checkOut} setDate={setCheckOut} />
+        </div>
+
+        {/* Restrições Alimentares */}
+        <div className="md:col-span-2">
+          <Label htmlFor="foodRestrictions" className="inline-flex items-center space-x-2">
+            <Checkbox
+              id="foodRestrictions"
+              checked={hasFoodRestrictions}
+              onCheckedChange={(checked) => setHasFoodRestrictions(!!checked)}
+            />
+            <span>Possui restrições alimentares?</span>
+          </Label>
+          {hasFoodRestrictions && (
+            <Textarea
+              id="foodRestrictionDetails"
+              placeholder="Descreva suas restrições alimentares"
+              value={foodRestrictionDetails}
+              onChange={(e) => setFoodRestrictionDetails(e.target.value)}
+              className="mt-2"
+            />
+          )}
+        </div>
+
+        {/* Restrições de Saúde */}
+        <div className="md:col-span-2">
+          <Label htmlFor="healthRestrictions" className="inline-flex items-center space-x-2">
+            <Checkbox
+              id="healthRestrictions"
+              checked={hasHealthRestrictions}
+              onCheckedChange={(checked) => setHasHealthRestrictions(!!checked)}
+            />
+            <span>Possui restrições de saúde?</span>
+          </Label>
+          {hasHealthRestrictions && (
+            <Textarea
+              id="healthRestrictionDetails"
+              placeholder="Descreva suas restrições de saúde"
+              value={healthRestrictionDetails}
+              onChange={(e) => setHealthRestrictionDetails(e.target.value)}
+              className="mt-2"
+            />
+          )}
+        </div>
+
+        {/* Contato de Emergência */}
+        <div>
+          <Label htmlFor="emergencyContactName">Nome do Contato de Emergência</Label>
+          <Input
+            type="text"
+            id="emergencyContactName"
+            value={emergencyContactName}
+            onChange={(e) => setEmergencyContactName(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label htmlFor="emergencyContactRelationship">Relação com o Contato</Label>
+          <Input
+            type="text"
+            id="emergencyContactRelationship"
+            value={emergencyContactRelationship}
+            onChange={(e) => setEmergencyContactRelationship(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label htmlFor="emergencyContactPhone">Telefone do Contato de Emergência</Label>
+          <Input
+            type="tel"
+            id="emergencyContactPhone"
+            value={emergencyContactPhone}
+            onChange={(e) => setEmergencyContactPhone(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label htmlFor="emergencyContactEmail">Email do Contato de Emergência</Label>
+          <Input
+            type="email"
+            id="emergencyContactEmail"
+            value={emergencyContactEmail}
+            onChange={(e) => setEmergencyContactEmail(e.target.value)}
+          />
+        </div>
+
+        {/* Noite Extra */}
+        <div className="md:col-span-2">
+          <Label htmlFor="extraNightRequired" className="inline-flex items-center space-x-2">
+            <Checkbox
+              id="extraNightRequired"
+              checked={extraNightRequired}
+              onCheckedChange={(checked) => setExtraNightRequired(!!checked)}
+            />
+            <span>Precisa de noite extra?</span>
+          </Label>
+          {extraNightRequired && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div>
+                <Label htmlFor="extraNightType">Tipo de Noite Extra</Label>
+                <Select defaultValue={extraNightType} onValueChange={setExtraNightType}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="before">Antes</SelectItem>
+                    <SelectItem value="after">Depois</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="extraNightQuantity">Quantidade de Noites Extras</Label>
+                <Input
+                  type="number"
+                  id="extraNightQuantity"
+                  value={extraNightQuantity}
+                  onChange={(e) => setExtraNightQuantity(Number(e.target.value))}
+                  min="1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="extraNightDates">Datas das Noites Extras</Label>
+                <Input
+                  type="text"
+                  id="extraNightDates"
+                  value={extraNightDates}
+                  onChange={(e) => setExtraNightDates(e.target.value)}
+                  placeholder="Ex: 2024-07-01, 2024-07-02"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Submit Button */}
+        <div className="md:col-span-2">
+          <Button type="submit" disabled={submitting} className="w-full bg-teal text-white">
+            {submitting ? "Enviando..." : "Enviar Reserva"}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };
