@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -287,17 +288,24 @@ const ReservationForm = () => {
         form_submitted: true
       };
 
-      const { error: reservationError } = await supabase
+      // Inserir a reserva e obter o ID
+      const { data: reservationData2, error: reservationError } = await supabase
         .from('reservations')
-        .insert(reservationData);
+        .insert(reservationData)
+        .select('id')
+        .single();
 
       if (reservationError) {
         throw new Error(reservationError.message);
       }
 
+      // Agora temos o ID da reserva para usar nos documentos
+      const reservationId = reservationData2.id;
+
       if (passportPath) {
         await supabase.from('documents').insert({
           user_id: userId,
+          reservation_id: reservationId,
           document_type: 'passport',
           file_name: passportFileName,
           file_url: passportPath,
@@ -308,6 +316,7 @@ const ReservationForm = () => {
       if (schoolLetterPath) {
         await supabase.from('documents').insert({
           user_id: userId,
+          reservation_id: reservationId,
           document_type: 'school_letter',
           file_name: schoolLetterFileName,
           file_url: schoolLetterPath,
