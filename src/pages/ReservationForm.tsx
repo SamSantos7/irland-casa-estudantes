@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/DatePicker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
@@ -17,8 +15,9 @@ import { ChevronRight, ChevronLeft, File, FileCheck, Calendar, User, Phone, Mail
 const ReservationForm = () => {
   const navigate = useNavigate();
   const [accommodations, setAccommodations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 4;
   const [submitting, setSubmitting] = useState(false);
   
   // Informações pessoais
@@ -36,8 +35,8 @@ const ReservationForm = () => {
   
   // Detalhes da reserva
   const [selectedAccommodation, setSelectedAccommodation] = useState("");
-  const [checkIn, setCheckIn] = useState<Date | undefined>();
-  const [checkOut, setCheckOut] = useState<Date | undefined>();
+  const [checkIn, setCheckIn] = useState(undefined);
+  const [checkOut, setCheckOut] = useState(undefined);
   
   // Restrições
   const [hasFoodRestrictions, setHasFoodRestrictions] = useState(false);
@@ -59,15 +58,33 @@ const ReservationForm = () => {
 
   useEffect(() => {
     const fetchAccommodations = async () => {
-      const { data, error } = await supabase
-        .from('accommodations')
-        .select('*');
+      try {
+        setLoading(true);
+        console.log("Buscando acomodações...");
+        
+        const { data, error } = await supabase
+          .from('accommodations')
+          .select('*')
+          .eq('is_active', true);
 
-      if (error) {
-        console.error("Erro ao carregar acomodações:", error);
-        toast.error("Erro ao carregar acomodações.");
-      } else {
-        setAccommodations(data);
+        if (error) {
+          console.error("Erro ao carregar acomodações:", error);
+          toast.error("Erro ao carregar acomodações. Por favor, tente novamente.");
+          return;
+        }
+        
+        console.log("Acomodações encontradas:", data?.length || 0);
+        if (data && data.length > 0) {
+          setAccommodations(data);
+        } else {
+          console.log("Nenhuma acomodação ativa encontrada");
+          toast.warning("Nenhuma acomodação disponível no momento.");
+        }
+      } catch (err) {
+        console.error("Exceção ao buscar acomodações:", err);
+        toast.error("Erro inesperado ao carregar acomodações.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -105,17 +122,7 @@ const ReservationForm = () => {
           return false;
         }
         return true;
-      case 3: // Detalhes da reserva
-        if (!selectedAccommodation) {
-          toast.error("Por favor, selecione uma acomodação");
-          return false;
-        }
-        if (!checkIn || !checkOut) {
-          toast.error("Por favor, selecione as datas de check-in e check-out");
-          return false;
-        }
-        return true;
-      case 4: // Informações médicas e contato de emergência
+      case 3: // Informações médicas e contato de emergência
         if (hasFoodRestrictions && !foodRestrictionDetails) {
           toast.error("Por favor, descreva suas restrições alimentares");
           return false;
@@ -129,7 +136,15 @@ const ReservationForm = () => {
           return false;
         }
         return true;
-      case 5: // Noites extras
+      case 4: // Detalhes da reserva e noites extras
+        if (!selectedAccommodation) {
+          toast.error("Por favor, selecione uma acomodação");
+          return false;
+        }
+        if (!checkIn || !checkOut) {
+          toast.error("Por favor, selecione as datas de check-in e check-out");
+          return false;
+        }
         if (extraNightRequired && (!extraNightType || !extraNightQuantity)) {
           toast.error("Por favor, preencha os detalhes das noites extras");
           return false;
@@ -153,9 +168,9 @@ const ReservationForm = () => {
   };
 
   const uploadFiles = async () => {
-    // Upload do passaporte
+    let passportPath = null;
     if (passportFile) {
-      const passportPath = `${Date.now()}_${passportFile.name}`;
+      passportPath = `${Date.now()}_${passportFile.name}`;
       const { error: passportError } = await supabase.storage
         .from('documents')
         .upload(passportPath, passportFile);
@@ -166,9 +181,9 @@ const ReservationForm = () => {
       }
     }
 
-    // Upload da carta da escola
+    let schoolLetterPath = null;
     if (schoolLetterFile) {
-      const schoolLetterPath = `${Date.now()}_${schoolLetterFile.name}`;
+      schoolLetterPath = `${Date.now()}_${schoolLetterFile.name}`;
       const { error: schoolLetterError } = await supabase.storage
         .from('documents')
         .upload(schoolLetterPath, schoolLetterFile);
@@ -178,6 +193,8 @@ const ReservationForm = () => {
         throw new Error("Erro ao fazer upload da carta da escola");
       }
     }
+
+    return { passportPath, schoolLetterPath };
   };
 
   const calculateWeeks = () => {
@@ -205,10 +222,8 @@ const ReservationForm = () => {
     setSubmitting(true);
 
     try {
-      // Upload dos arquivos
-      await uploadFiles();
+      const { passportPath, schoolLetterPath } = await uploadFiles();
 
-      // Verificar se o usuário já existe
       const { data: existingUser } = await supabase
         .from('profiles')
         .select('id')
@@ -220,7 +235,6 @@ const ReservationForm = () => {
       if (existingUser) {
         userId = existingUser.id;
         
-        // Atualizar perfil existente
         await supabase
           .from('profiles')
           .update({
@@ -232,7 +246,6 @@ const ReservationForm = () => {
           })
           .eq('id', userId);
       } else {
-        // Criar novo usuário no Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: email,
           password: Math.random().toString(36).slice(-10) + Math.random().toString(36).toUpperCase().slice(-2) + Math.random().toString(36).slice(-2),
@@ -252,7 +265,6 @@ const ReservationForm = () => {
         userId = authData.user.id;
       }
 
-      // Dados da reserva
       const reservationData = {
         user_id: userId,
         accommodation_id: selectedAccommodation,
@@ -270,20 +282,37 @@ const ReservationForm = () => {
         extra_night_type: extraNightType,
         extra_night_quantity: extraNightQuantity,
         extra_night_dates: extraNightDates,
-        passport_uploaded: true,
-        school_letter_uploaded: true,
         total_price: calculatePrice(),
         weeks: calculateWeeks(),
         form_submitted: true
       };
 
-      // Inserir a reserva
       const { error: reservationError } = await supabase
         .from('reservations')
         .insert(reservationData);
 
       if (reservationError) {
         throw new Error(reservationError.message);
+      }
+
+      if (passportPath) {
+        await supabase.from('documents').insert({
+          user_id: userId,
+          document_type: 'passport',
+          file_name: passportFileName,
+          file_url: passportPath,
+          status: 'aguardando'
+        });
+      }
+
+      if (schoolLetterPath) {
+        await supabase.from('documents').insert({
+          user_id: userId,
+          document_type: 'school_letter',
+          file_name: schoolLetterFileName,
+          file_url: schoolLetterPath,
+          status: 'aguardando'
+        });
       }
 
       toast.success("Reserva enviada com sucesso!");
@@ -347,7 +376,7 @@ const ReservationForm = () => {
               <div>
                 <Label htmlFor="phone" className="flex items-center gap-2">
                   <Phone size={16} />
-                  Telefone
+                  Telefone (com DDD)
                 </Label>
                 <Input
                   type="tel"
@@ -438,48 +467,8 @@ const ReservationForm = () => {
         );
       case 3:
         return (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold mb-4">3. Detalhes da Reserva</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <Label htmlFor="accommodation" className="flex items-center gap-2">
-                  <Star size={16} />
-                  Acomodação
-                </Label>
-                <Select value={selectedAccommodation} onValueChange={setSelectedAccommodation}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione a acomodação" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accommodations.map((accommodation) => (
-                      <SelectItem key={accommodation.id} value={String(accommodation.id)}>
-                        {accommodation.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="flex items-center gap-2">
-                  <Calendar size={16} />
-                  Check-in
-                </Label>
-                <DatePicker date={checkIn} setDate={setCheckIn} />
-              </div>
-              <div>
-                <Label className="flex items-center gap-2">
-                  <Calendar size={16} />
-                  Check-out
-                </Label>
-                <DatePicker date={checkOut} setDate={setCheckOut} />
-              </div>
-            </div>
-          </div>
-        );
-      case 4:
-        return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold mb-4">4. Informações Médicas e de Emergência</h2>
+            <h2 className="text-xl font-semibold mb-4">3. Informações Médicas e de Emergência</h2>
             
             <div className="space-y-4 border p-4 rounded-md">
               <h3 className="font-medium">Restrições Alimentares</h3>
@@ -611,12 +600,55 @@ const ReservationForm = () => {
             </div>
           </div>
         );
-      case 5:
+      case 4:
         return (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold mb-4">5. Noites Extras</h2>
+            <h2 className="text-xl font-semibold mb-4">4. Detalhes da Reserva</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="accommodation" className="flex items-center gap-2">
+                  <Star size={16} />
+                  Acomodação
+                </Label>
+                {loading ? (
+                  <div className="py-2 px-4 border rounded-md text-gray-500">Carregando acomodações...</div>
+                ) : accommodations.length > 0 ? (
+                  <Select value={selectedAccommodation} onValueChange={setSelectedAccommodation}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione a acomodação" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accommodations.map((accommodation) => (
+                        <SelectItem key={accommodation.id} value={accommodation.id}>
+                          {accommodation.title || accommodation.name} - {accommodation.neighborhood}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="py-2 px-4 border rounded-md text-red-500">
+                    Nenhuma acomodação disponível. Por favor, entre em contato conosco.
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Calendar size={16} />
+                  Check-in
+                </Label>
+                <DatePicker date={checkIn} setDate={setCheckIn} />
+              </div>
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Calendar size={16} />
+                  Check-out
+                </Label>
+                <DatePicker date={checkOut} setDate={setCheckOut} />
+              </div>
+            </div>
             
-            <div className="space-y-4 border p-4 rounded-md">
+            <div className="space-y-4 border p-4 rounded-md mt-6">
+              <h3 className="font-medium">Noites Extras</h3>
               <div className="flex items-center gap-2 mb-3">
                 <Label className="!m-0">Precisa de noites extras?</Label>
                 <RadioGroup 
@@ -682,18 +714,18 @@ const ReservationForm = () => {
               )}
             </div>
             
-            <div className="border p-4 rounded-md bg-slate-50 dark:bg-slate-900">
-              <h3 className="font-medium mb-2">Resumo da Reserva</h3>
-              {selectedAccommodation && accommodations.length > 0 && (
+            {selectedAccommodation && (
+              <div className="border p-4 rounded-md bg-slate-50 dark:bg-slate-900">
+                <h3 className="font-medium mb-2">Resumo da Reserva</h3>
                 <div className="space-y-2 text-sm">
-                  <p><strong>Acomodação:</strong> {accommodations.find(acc => acc.id === selectedAccommodation)?.name}</p>
+                  <p><strong>Acomodação:</strong> {accommodations.find(acc => acc.id === selectedAccommodation)?.title || accommodations.find(acc => acc.id === selectedAccommodation)?.name}</p>
                   {checkIn && <p><strong>Check-in:</strong> {checkIn.toLocaleDateString()}</p>}
                   {checkOut && <p><strong>Check-out:</strong> {checkOut.toLocaleDateString()}</p>}
                   <p><strong>Semanas:</strong> {calculateWeeks()}</p>
                   <p><strong>Valor Total:</strong> R$ {calculatePrice().toFixed(2)}</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         );
       default:
@@ -716,9 +748,8 @@ const ReservationForm = () => {
         <div className="flex justify-between mt-2 text-xs text-gray-500">
           <span>Informações Pessoais</span>
           <span>Documentos</span>
-          <span>Detalhes</span>
-          <span>Saúde</span>
-          <span>Finalizar</span>
+          <span>Informações Médicas</span>
+          <span>Detalhes da Reserva</span>
         </div>
       </div>
       
