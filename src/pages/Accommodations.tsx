@@ -5,112 +5,25 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import AccommodationCard from "../components/AccommodationCard";
 import WhatsAppButton from "../components/WhatsAppButton";
-import { Filter, X, Check } from "lucide-react";
-import { RoomType } from "../components/AccommodationCard";
+import { Filter, X, Check, Loader2 } from "lucide-react";
+import { RoomType, BathroomType } from "../components/AccommodationCard";
 import SEO from "../components/SEO";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-// Sample accommodations data
-const accommodationsData = [
-  {
-    id: 1,
-    name: "Dublin Central Residence",
-    city: "dublin",
-    roomType: "individual" as RoomType,
-    pricePerWeek: 250,
-    imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
-    availabilityStatus: "limited" as "normal" | "limited" | "last_units",
-    neighborhood: "Centro",
-    minWeeks: 4
-  },
-  {
-    id: 2,
-    name: "Dublin Student Loft",
-    city: "dublin",
-    roomType: "shared" as RoomType,
-    pricePerWeek: 180,
-    imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60",
-    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
-    neighborhood: "Universitário",
-    minWeeks: 8
-  },
-  {
-    id: 3,
-    name: "Dublin Bay View",
-    city: "dublin",
-    roomType: "double" as RoomType,
-    pricePerWeek: 320,
-    imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
-    availabilityStatus: "last_units" as "normal" | "limited" | "last_units",
-    neighborhood: "Costa",
-    minWeeks: 6
-  },
-  {
-    id: 4,
-    name: "Cork Student House",
-    city: "cork",
-    roomType: "individual" as RoomType,
-    pricePerWeek: 220,
-    imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
-    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
-    neighborhood: "Centro",
-    minWeeks: 4
-  },
-  {
-    id: 5,
-    name: "Cork City Apartment",
-    city: "cork",
-    roomType: "shared" as RoomType,
-    pricePerWeek: 170,
-    imageUrl: "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
-    availabilityStatus: "limited" as "normal" | "limited" | "last_units",
-    neighborhood: "Sul",
-    minWeeks: 12
-  },
-  {
-    id: 6,
-    name: "Galway Campus Suite",
-    city: "galway",
-    roomType: "individual" as RoomType,
-    pricePerWeek: 240,
-    imageUrl: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
-    availabilityStatus: "last_units" as "normal" | "limited" | "last_units",
-    neighborhood: "Campus",
-    minWeeks: 16
-  },
-  {
-    id: 7,
-    name: "Galway Seaside Home",
-    city: "galway",
-    roomType: "double" as RoomType,
-    pricePerWeek: 300,
-    imageUrl: "https://images.unsplash.com/photo-1499916078039-922301b0eb9b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
-    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
-    neighborhood: "Salthill",
-    minWeeks: 4
-  },
-  {
-    id: 8,
-    name: "Limerick City View",
-    city: "limerick",
-    roomType: "individual" as RoomType,
-    pricePerWeek: 210,
-    imageUrl: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
-    availabilityStatus: "limited" as "normal" | "limited" | "last_units",
-    neighborhood: "Centro Histórico",
-    minWeeks: 8
-  },
-  {
-    id: 9,
-    name: "Limerick Campus Residence",
-    city: "limerick",
-    roomType: "shared" as RoomType,
-    pricePerWeek: 160,
-    imageUrl: "https://images.unsplash.com/photo-1559599238-3d0d41863f8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDF8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
-    availabilityStatus: "normal" as "normal" | "limited" | "last_units",
-    neighborhood: "Campus",
-    minWeeks: 12
-  },
-];
+// Tipos para os dados do banco
+type AccommodationData = {
+  id: string;
+  title: string;
+  city: string;
+  room_type: RoomType;
+  bathroom_type: BathroomType;
+  price_per_week: number;
+  neighborhood?: string;
+  min_weeks: number;
+  gender: string;
+  bathroom_shared_count?: number | null;
+};
 
 const cities = [
   { value: "dublin", label: "Dublin" },
@@ -121,8 +34,9 @@ const cities = [
 
 const roomTypes = [
   { value: "individual", label: "Quarto Individual" },
-  { value: "shared", label: "Quarto Compartilhado" },
-  { value: "double", label: "Quarto de Casal" },
+  { value: "duplo", label: "Quarto Duplo" },
+  { value: "triplo", label: "Quarto Triplo" },
+  { value: "quadruplo", label: "Quarto Quádruplo" },
 ];
 
 const priceRanges = [
@@ -139,30 +53,67 @@ const availabilityOptions = [
 ];
 
 const Accommodations = () => {
+  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filteredAccommodations, setFilteredAccommodations] = useState(accommodationsData);
+  const [accommodations, setAccommodations] = useState<AccommodationData[]>([]);
+  const [filteredAccommodations, setFilteredAccommodations] = useState<AccommodationData[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [selectedRoomTypes, setSelectedRoomTypes] = useState<string[]>([]);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Carregar acomodações do Supabase
+  useEffect(() => {
+    const fetchAccommodations = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('accommodations')
+          .select('*')
+          .eq('is_active', true)
+          .order('city');
+          
+        if (error) throw error;
+        
+        if (data) {
+          setAccommodations(data);
+          setFilteredAccommodations(data);
+        }
+      } catch (error: any) {
+        toast({
+          title: "Erro ao carregar acomodações",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAccommodations();
+  }, []);
+
+  // Aplicar filtros da query string
   useEffect(() => {
     const city = searchParams.get("city");
     const roomType = searchParams.get("roomType");
     const checkIn = searchParams.get("checkIn");
     const checkOut = searchParams.get("checkOut");
 
-    if (city) setSelectedCities([city]);
+    if (city) setSelectedCities([city.toLowerCase()]);
     if (roomType) setSelectedRoomTypes([roomType]);
 
-    applyFilters(
-      city ? [city] : [],
-      roomType ? [roomType] : [],
-      [],
-      "all"
-    );
-  }, [searchParams]);
+    if (accommodations.length > 0) {
+      applyFilters(
+        city ? [city.toLowerCase()] : [],
+        roomType ? [roomType] : [],
+        [],
+        "all"
+      );
+    }
+  }, [searchParams, accommodations]);
 
   const applyFilters = (
     cities: string[],
@@ -170,28 +121,26 @@ const Accommodations = () => {
     priceRanges: string[],
     availability: string
   ) => {
-    let filtered = [...accommodationsData];
+    let filtered = [...accommodations];
 
     if (cities.length > 0) {
-      filtered = filtered.filter((acc) => cities.includes(acc.city));
+      filtered = filtered.filter((acc) => cities.includes(acc.city.toLowerCase()));
     }
 
     if (roomTypes.length > 0) {
-      filtered = filtered.filter((acc) => roomTypes.includes(acc.roomType));
+      filtered = filtered.filter((acc) => roomTypes.includes(acc.room_type));
     }
 
     if (priceRanges.length > 0) {
       filtered = filtered.filter((acc) => {
         return priceRanges.some((range) => {
           const [min, max] = range.split("-").map(Number);
-          return acc.pricePerWeek >= min && acc.pricePerWeek <= max;
+          return acc.price_per_week >= min && acc.price_per_week <= max;
         });
       });
     }
 
-    if (availability !== "all") {
-      filtered = filtered.filter((acc) => acc.availabilityStatus === availability);
-    }
+    // Nota: o campo availability precisa ser implementado se necessário
 
     setFilteredAccommodations(filtered);
   };
@@ -235,6 +184,17 @@ const Accommodations = () => {
 
   const toggleFiltersView = () => {
     setShowFilters(!showFilters);
+  };
+
+  // Determinar status de disponibilidade com base na quantidade de acomodações similares
+  const getAvailabilityStatus = (roomType: string, city: string): "normal" | "limited" | "last_units" => {
+    const similar = filteredAccommodations.filter(
+      acc => acc.room_type === roomType && acc.city.toLowerCase() === city.toLowerCase()
+    );
+    
+    if (similar.length <= 1) return "last_units";
+    if (similar.length <= 3) return "limited";
+    return "normal";
   };
 
   return (
@@ -396,26 +356,34 @@ const Accommodations = () => {
               <div className="w-full lg:w-3/4">
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-neutrals-dark dark:text-white mb-2">
-                    {filteredAccommodations.length} acomodações encontradas
+                    {!isLoading ? `${filteredAccommodations.length} acomodações encontradas` : 'Carregando acomodações...'}
                   </h2>
                   <p className="text-muted-foreground">
                     Encontre o lugar ideal para sua estadia na Irlanda
                   </p>
                 </div>
-                {filteredAccommodations.length > 0 ? (
+                
+                {isLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-teal" />
+                  </div>
+                ) : filteredAccommodations.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredAccommodations.map((accommodation) => (
                       <AccommodationCard 
                         key={accommodation.id}
-                        id={accommodation.id}
-                        name={accommodation.name}
+                        id={Number(accommodation.id.substring(0, 8))} // Usando um ID numérico para compatibilidade
+                        name={accommodation.title}
                         city={accommodation.city}
-                        roomType={accommodation.roomType}
-                        pricePerWeek={accommodation.pricePerWeek}
-                        imageUrl={accommodation.imageUrl}
-                        availabilityStatus={accommodation.availabilityStatus}
-                        neighborhood={accommodation.neighborhood}
-                        minWeeks={accommodation.minWeeks}
+                        roomType={accommodation.room_type}
+                        pricePerWeek={accommodation.price_per_week}
+                        imageUrl="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60" // Precisaremos obter as imagens do banco posteriormente
+                        availabilityStatus={getAvailabilityStatus(accommodation.room_type, accommodation.city)}
+                        neighborhood={accommodation.neighborhood || "Centro"}
+                        minWeeks={accommodation.min_weeks}
+                        bathroomType={accommodation.bathroom_type}
+                        bathroomShared={accommodation.bathroom_shared_count || 2}
+                        genderDivision={accommodation.gender === "feminino" || accommodation.gender === "masculino" ? "same" : "mixed"}
                       />
                     ))}
                   </div>
@@ -433,7 +401,7 @@ const Accommodations = () => {
                   </div>
                 )}
                 
-                {filteredAccommodations.length > 0 && (
+                {filteredAccommodations.length > 0 && !isLoading && (
                   <div className="mt-12 flex justify-center">
                     <Link
                       to="/reservation-form"
